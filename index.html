@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- Ensures correct scaling on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Student Finance Tracker — track your expenses, set budgets, and search transactions." />
+  <title>Student Finance Tracker</title>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+
+<body>
+
+  <!-- ========================================================
+    SKIP LINK — allows keyboard users to jump past the nav
+    directly to main content. Required for a11y.
+  ======================================================== -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ========================================================
+    HEADER — site identity and primary navigation
+    role="banner" is implied by <header> but explicit here
+    for clarity during grading.
+  ======================================================== -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+
+      <!-- Site logo / name -->
+      <div class="site-brand">
+        <span class="brand-icon" aria-hidden="true">&#x1F4B0;</span>
+        <span class="brand-name">Finance Tracker</span>
+      </div>
+
+      <!-- Mobile hamburger button — only visible on small screens -->
+      <button
+        class="nav-toggle"
+        aria-controls="primary-nav"
+        aria-expanded="false"
+        aria-label="Open navigation menu"
+      >
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+
+      <!-- Primary navigation -->
+      <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation">
+        <ul role="list">
+          <li><a href="#section-about"      class="nav-link" data-section="about">About</a></li>
+          <li><a href="#section-dashboard"  class="nav-link" data-section="dashboard">Dashboard</a></li>
+          <li><a href="#section-records"    class="nav-link" data-section="records">Records</a></li>
+          <li><a href="#section-add"        class="nav-link" data-section="add">Add / Edit</a></li>
+          <li><a href="#section-settings"   class="nav-link" data-section="settings">Settings</a></li>
+        </ul>
+      </nav>
+
+    </div><!-- /.header-inner -->
+  </header>
+
+  <!-- ========================================================
+    MAIN CONTENT — all app sections live here
+    id="main-content" is the target for the skip link above
+  ======================================================== -->
+  <main id="main-content" role="main">
+
+    <!-- ======================================================
+      SECTION 1 — ABOUT
+      Purpose of the app + links to GitHub and contact
+    ====================================================== -->
+    <section
+      id="section-about"
+      class="app-section"
+      aria-labelledby="about-heading"
+    >
+      <div class="section-inner">
+
+        <h1 id="about-heading">Student Finance Tracker</h1>
+        <p class="about-tagline">
+          Track every shilling. Know where your money goes.
+        </p>
+
+        <p class="about-description">
+          A lightweight, offline-first expense tracker built for students.
+          Log transactions, set a monthly budget cap, search your history
+          with regex, and export your data anytime — no account required.
+        </p>
+
+        <!-- Contact / links -->
+        <div class="about-links">
+          <a
+            href="https://github.com/j-nyamu"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-outline"
+            aria-label="View source code on GitHub (opens in new tab)"
+          >
+            GitHub Repository
+          </a>
+          <a
+            href="mailto:your-email@alustudent.com"
+            class="btn btn-ghost"
+            aria-label="Send an email to the developer"
+          >
+            Contact
+          </a>
+        </div>
+
+      </div><!-- /.section-inner -->
+    </section>
+
+
+    <!-- ======================================================
+      SECTION 2 — DASHBOARD / STATS
+      Summary cards + 7-day trend chart + ARIA live region
+      for budget cap alerts
+    ====================================================== -->
+    <section
+      id="section-dashboard"
+      class="app-section"
+      aria-labelledby="dashboard-heading"
+    >
+      <div class="section-inner">
+
+        <h2 id="dashboard-heading">Dashboard</h2>
+
+        <!-- ARIA live region — budget cap alerts are injected here by JS.
+             aria-live="polite" for under-cap updates,
+             switched to "assertive" by JS when cap is exceeded -->
+        <div
+          id="budget-alert"
+          class="budget-alert"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+
+        <!-- Stat cards — values filled in by ui.js -->
+        <div class="stats-grid">
+
+          <div class="stat-card" aria-label="Total transactions">
+            <span class="stat-value" id="stat-total-count">0</span>
+            <span class="stat-label">Transactions</span>
+          </div>
+
+          <div class="stat-card" aria-label="Total amount spent">
+            <span class="stat-value" id="stat-total-amount">0.00</span>
+            <span class="stat-label">Total Spent</span>
+          </div>
+
+          <div class="stat-card" aria-label="Top spending category">
+            <span class="stat-value" id="stat-top-category">—</span>
+            <span class="stat-label">Top Category</span>
+          </div>
+
+          <div class="stat-card" aria-label="Budget remaining">
+            <span class="stat-value" id="stat-budget-remaining">—</span>
+            <span class="stat-label">Remaining</span>
+          </div>
+
+        </div><!-- /.stats-grid -->
+
+        <!-- 7-day trend chart — drawn by ui.js using canvas or divs -->
+        <div class="chart-wrapper" aria-label="Spending over the last 7 days">
+          <h3 class="chart-title">Last 7 days</h3>
+          <!-- Chart bars are injected here by ui.js -->
+          <div id="trend-chart" class="trend-chart" role="img" aria-label="Bar chart of daily spending for the past 7 days"></div>
+        </div>
+
+        <!-- Currency conversion widget -->
+        <div class="conversion-widget" aria-labelledby="conversion-heading">
+          <h3 id="conversion-heading">Currency Converter</h3>
+          <div class="conversion-controls">
+            <label for="convert-amount" class="visually-hidden">Amount to convert</label>
+            <input
+              type="number"
+              id="convert-amount"
+              class="input-field"
+              placeholder="Enter amount"
+              min="0"
+              step="0.01"
+              aria-describedby="convert-result"
+            />
+            <label for="convert-from" class="visually-hidden">From currency</label>
+            <select id="convert-from" class="input-field select-field">
+              <!-- Options populated by ui.js from settings -->
+            </select>
+            <span class="conversion-arrow" aria-hidden="true">&#8594;</span>
+            <label for="convert-to" class="visually-hidden">To currency</label>
+            <select id="convert-to" class="input-field select-field">
+              <!-- Options populated by ui.js from settings -->
+            </select>
+            <button id="btn-convert" class="btn btn-primary">Convert</button>
+          </div>
+          <!-- Result announced to screen readers via aria-live -->
+          <p id="convert-result" aria-live="polite" class="conversion-result"></p>
+        </div>
+
+      </div><!-- /.section-inner -->
+    </section>
+
+
+    <!-- ======================================================
+      SECTION 3 — RECORDS TABLE
+      Sortable table + live regex search
+    ====================================================== -->
+    <section
+      id="section-records"
+      class="app-section"
+      aria-labelledby="records-heading"
+    >
+      <div class="section-inner">
+
+        <h2 id="records-heading">Transactions</h2>
+
+        <!-- Search and filter bar -->
+        <div class="records-toolbar" role="search">
+
+          <div class="search-group">
+            <label for="search-input">Search transactions</label>
+            <input
+              type="search"
+              id="search-input"
+              class="input-field"
+              placeholder='Try "food" or "\\d+\\.\\d{2}"'
+              aria-describedby="search-hint search-error"
+              autocomplete="off"
+            />
+            <!-- Hint text below the search field -->
+            <span id="search-hint" class="field-hint">
+              Supports plain text and regex patterns.
+            </span>
+            <!-- Error shown when regex is invalid — injected by search.js -->
+            <span id="search-error" class="field-error" role="alert" aria-live="assertive"></span>
+          </div>
+
+          <!-- Case-insensitive toggle -->
+          <div class="search-options">
+            <label class="toggle-label" for="toggle-case">
+              <input type="checkbox" id="toggle-case" checked />
+              Case-insensitive
+            </label>
+          </div>
+
+          <!-- Sort controls -->
+          <div class="sort-group">
+            <label for="sort-by">Sort by</label>
+            <select id="sort-by" class="input-field select-field">
+              <option value="date-desc">Date (newest first)</option>
+              <option value="date-asc">Date (oldest first)</option>
+              <option value="desc-asc">Description (A to Z)</option>
+              <option value="desc-desc">Description (Z to A)</option>
+              <option value="amount-asc">Amount (low to high)</option>
+              <option value="amount-desc">Amount (high to low)</option>
+            </select>
+          </div>
+
+          <!-- Category filter -->
+          <div class="filter-group">
+            <label for="filter-category">Category</label>
+            <select id="filter-category" class="input-field select-field">
+              <option value="all">All categories</option>
+              <!-- Options added dynamically by ui.js -->
+            </select>
+          </div>
+
+        </div><!-- /.records-toolbar -->
+
+        <!-- Live count of visible results — announced politely -->
+        <p id="records-count" aria-live="polite" class="records-count"></p>
+
+        <!-- Records table — populated by ui.js -->
+        <!-- On mobile, this collapses to cards via CSS -->
+        <div class="table-wrapper" role="region" aria-label="Transactions table" tabindex="0">
+          <table id="records-table" class="records-table">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Description</th>
+                <th scope="col">Category</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <!-- Table body rows injected by ui.js -->
+            <tbody id="records-tbody">
+            </tbody>
+          </table>
+        </div><!-- /.table-wrapper -->
+
+        <!-- Empty state — shown by ui.js when no records match -->
+        <div id="empty-state" class="empty-state" hidden>
+          <p>No transactions found. Add one below or adjust your search.</p>
+          <a href="#section-add" class="btn btn-primary">Add transaction</a>
+        </div>
+
+      </div><!-- /.section-inner -->
+    </section>
+
+
+    <!-- ======================================================
+      SECTION 4 — ADD / EDIT FORM
+      All inputs validated by validators.js in real time
+    ====================================================== -->
+    <section
+      id="section-add"
+      class="app-section"
+      aria-labelledby="form-heading"
+    >
+      <div class="section-inner">
+
+        <!-- Heading changes between "Add" and "Edit" via JS -->
+        <h2 id="form-heading">Add Transaction</h2>
+
+        <!-- General form status — e.g. "Transaction saved" -->
+        <div
+          id="form-status"
+          class="form-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+
+        <form id="transaction-form" class="transaction-form" novalidate>
+
+          <!-- Hidden field — stores id when editing an existing record -->
+          <input type="hidden" id="field-id" />
+
+          <!-- Description field -->
+          <div class="form-group">
+            <label for="field-description">
+              Description <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              id="field-description"
+              class="input-field"
+              placeholder="e.g. Lunch at cafeteria"
+              required
+              aria-required="true"
+              aria-describedby="desc-error desc-hint"
+              autocomplete="off"
+            />
+            <span id="desc-hint" class="field-hint">
+              No leading or trailing spaces. No duplicate consecutive words.
+            </span>
+            <!-- Error injected by validators.js -->
+            <span id="desc-error" class="field-error" role="alert" aria-live="assertive"></span>
+          </div>
+
+          <!-- Amount field -->
+          <div class="form-group">
+            <label for="field-amount">
+              Amount <span class="required" aria-hidden="true">*</span>
+            </label>
+            <div class="input-with-prefix">
+              <!-- Currency symbol shown from settings -->
+              <span class="input-prefix" id="amount-currency-symbol" aria-label="Currency">$</span>
+              <input
+                type="text"
+                id="field-amount"
+                class="input-field"
+                placeholder="0.00"
+                required
+                aria-required="true"
+                aria-describedby="amount-error amount-hint"
+                inputmode="decimal"
+              />
+            </div>
+            <span id="amount-hint" class="field-hint">
+              Positive number, up to 2 decimal places (e.g. 12.50).
+            </span>
+            <span id="amount-error" class="field-error" role="alert" aria-live="assertive"></span>
+          </div>
+
+          <!-- Category field -->
+          <div class="form-group">
+            <label for="field-category">
+              Category <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select
+              id="field-category"
+              class="input-field select-field"
+              required
+              aria-required="true"
+              aria-describedby="category-error"
+            >
+              <option value="">Select a category</option>
+              <option value="Food">Food</option>
+              <option value="Books">Books</option>
+              <option value="Transport">Transport</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Fees">Fees</option>
+              <option value="Other">Other</option>
+            </select>
+            <span id="category-error" class="field-error" role="alert" aria-live="assertive"></span>
+          </div>
+
+          <!-- Date field -->
+          <div class="form-group">
+            <label for="field-date">
+              Date <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="date"
+              id="field-date"
+              class="input-field"
+              required
+              aria-required="true"
+              aria-describedby="date-error date-hint"
+            />
+            <span id="date-hint" class="field-hint">
+              Format: YYYY-MM-DD
+            </span>
+            <span id="date-error" class="field-error" role="alert" aria-live="assertive"></span>
+          </div>
+
+          <!-- Form action buttons -->
+          <div class="form-actions">
+            <button type="submit" id="btn-submit" class="btn btn-primary">
+              Save Transaction
+            </button>
+            <button type="button" id="btn-cancel" class="btn btn-ghost">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+
+      </div><!-- /.section-inner -->
+    </section>
+
+
+    <!-- ======================================================
+      SECTION 5 — SETTINGS
+      Budget cap + currency rates + import/export
+    ====================================================== -->
+    <section
+      id="section-settings"
+      class="app-section"
+      aria-labelledby="settings-heading"
+    >
+      <div class="section-inner">
+
+        <h2 id="settings-heading">Settings</h2>
+
+        <!-- Budget cap -->
+        <fieldset class="settings-group">
+          <legend>Monthly Budget Cap</legend>
+          <div class="form-group">
+            <label for="setting-budget-cap">Budget limit</label>
+            <input
+              type="number"
+              id="setting-budget-cap"
+              class="input-field"
+              placeholder="e.g. 500"
+              min="0"
+              step="0.01"
+              aria-describedby="budget-cap-hint"
+            />
+            <span id="budget-cap-hint" class="field-hint">
+              When your total spending exceeds this amount, you will be alerted.
+            </span>
+          </div>
+          <button id="btn-save-budget" class="btn btn-primary">Save cap</button>
+        </fieldset>
+
+        <!-- Currency settings -->
+        <fieldset class="settings-group">
+          <legend>Currency Settings</legend>
+          <p class="settings-description">
+            Set your base currency and manual exchange rates.
+            Rates are used for conversion on the dashboard.
+          </p>
+
+          <div class="form-group">
+            <label for="setting-base-currency">Base currency</label>
+            <select id="setting-base-currency" class="input-field select-field">
+              <option value="USD">USD — US Dollar</option>
+              <option value="KES">KES — Kenyan Shilling</option>
+              <option value="RWF">RWF — Rwandan Franc</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+            </select>
+          </div>
+
+          <!-- Rate 1: Base to currency 2 -->
+          <div class="form-group">
+            <label for="setting-rate-1-code">Second currency</label>
+            <div class="rate-row">
+              <select id="setting-rate-1-code" class="input-field select-field">
+                <option value="KES">KES</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="USD">USD</option>
+                <option value="RWF">RWF</option>
+              </select>
+              <label for="setting-rate-1-value" class="visually-hidden">Exchange rate</label>
+              <input
+                type="number"
+                id="setting-rate-1-value"
+                class="input-field"
+                placeholder="Rate (e.g. 129.50)"
+                min="0"
+                step="0.0001"
+                aria-describedby="rate-hint"
+              />
+            </div>
+          </div>
+
+          <!-- Rate 2: Base to currency 3 -->
+          <div class="form-group">
+            <label for="setting-rate-2-code">Third currency</label>
+            <div class="rate-row">
+              <select id="setting-rate-2-code" class="input-field select-field">
+                <option value="EUR">EUR</option>
+                <option value="KES">KES</option>
+                <option value="GBP">GBP</option>
+                <option value="USD">USD</option>
+                <option value="RWF">RWF</option>
+              </select>
+              <label for="setting-rate-2-value" class="visually-hidden">Exchange rate</label>
+              <input
+                type="number"
+                id="setting-rate-2-value"
+                class="input-field"
+                placeholder="Rate (e.g. 0.92)"
+                min="0"
+                step="0.0001"
+                aria-describedby="rate-hint"
+              />
+            </div>
+            <span id="rate-hint" class="field-hint">
+              How many units of the second/third currency equal 1 unit of base.
+            </span>
+          </div>
+
+          <button id="btn-save-rates" class="btn btn-primary">Save rates</button>
+
+          <!-- Settings save status -->
+          <p id="settings-status" role="status" aria-live="polite" class="form-status"></p>
+        </fieldset>
+
+        <!-- Import / Export -->
+        <fieldset class="settings-group">
+          <legend>Import and Export Data</legend>
+
+          <div class="import-export-actions">
+
+            <!-- Export JSON -->
+            <div class="io-group">
+              <p class="io-description">Download all your transactions as a JSON file.</p>
+              <button id="btn-export" class="btn btn-outline">Export JSON</button>
+            </div>
+
+            <!-- Import JSON -->
+            <div class="io-group">
+              <p class="io-description">
+                Load transactions from a JSON file.
+                Your current data will be replaced after validation.
+              </p>
+              <label for="import-file" class="btn btn-outline" role="button">
+                Choose file
+              </label>
+              <input
+                type="file"
+                id="import-file"
+                accept=".json"
+                class="visually-hidden"
+                aria-describedby="import-status"
+              />
+              <!-- Import result announced to screen readers -->
+              <p id="import-status" role="alert" aria-live="assertive" class="form-status"></p>
+            </div>
+
+          </div><!-- /.import-export-actions -->
+
+          <!-- Danger zone — clear all data -->
+          <div class="danger-zone">
+            <h3 class="danger-title">Danger zone</h3>
+            <p>This permanently deletes all transactions from this device.</p>
+            <button id="btn-clear-data" class="btn btn-danger">
+              Clear all data
+            </button>
+          </div>
+
+        </fieldset>
+
+      </div><!-- /.section-inner -->
+    </section>
+
+  </main><!-- /main -->
+
+
+  <!-- ========================================================
+    FOOTER — simple site footer
+  ======================================================== -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <p>
+        Student Finance Tracker &mdash; built by
+        <a
+          href="https://github.com/j-nyamu"
+          target="_blank"
+          rel="noopener noreferrer"
+        >j-nyamu</a>
+        &mdash; ALU Web Development
+      </p>
+    </div>
+  </footer>
+
+
+  <!-- ========================================================
+    CONFIRM DELETE DIALOG
+    Used when user clicks "Delete" on a record.
+    Hidden by default, shown by ui.js.
+    Keyboard focus is trapped inside when open.
+  ======================================================== -->
+  <div
+    id="confirm-dialog"
+    class="dialog-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialog-title"
+    aria-describedby="dialog-body"
+    hidden
+  >
+    <div class="dialog-box">
+      <h2 id="dialog-title">Delete transaction?</h2>
+      <p id="dialog-body">This action cannot be undone.</p>
+      <div class="dialog-actions">
+        <button id="btn-confirm-delete" class="btn btn-danger">Yes, delete</button>
+        <button id="btn-cancel-delete" class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+    SCRIPTS — loaded as ES modules so import/export works
+    Order matters: storage and state load before ui.js
+  ======================================================== -->
+  <script type="module" src="scripts/storage.js"></script>
+  <script type="module" src="scripts/state.js"></script>
+  <script type="module" src="scripts/validators.js"></script>
+  <script type="module" src="scripts/search.js"></script>
+  <script type="module" src="scripts/ui.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Tracker — Regex Tests</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 1rem; }
+    h1   { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    h2   { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3rem; }
+    .pass { color: #16a34a; font-weight: 600; }
+    .fail { color: #dc2626; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-bottom: 1rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: left; border: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-weight: 600; }
+    #summary { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-weight: 600; }
+    .all-pass { background: #f0fdf4; color: #16a34a; }
+    .has-fail  { background: #fef2f2; color: #dc2626; }
+    code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+
+  <h1>Regex Validator Tests</h1>
+  <p>Opens as a standalone page. No server needed — just open in a browser.</p>
+
+  <div id="summary"></div>
+  <div id="results"></div>
+
+<script type="module">
+
+  /* ============================================================
+     Import validators from the scripts folder.
+     Path is relative to this file which sits at the project root.
+     ============================================================ */
+  import {
+    validateDescription,
+    validateAmount,
+    validateDate,
+    validateCategory,
+  } from './scripts/validators.js';
+
+
+  /* ============================================================
+     TEST CASES
+     Each case: { input, expectValid, label }
+     expectValid = true means we expect the validator to PASS.
+     ============================================================ */
+
+  const tests = {
+
+    /* --- Description --- */
+    'Description': [
+      { input: 'Lunch at cafeteria',    expectValid: true,  label: 'Normal description' },
+      { input: 'Coffee',                expectValid: true,  label: 'Single word' },
+      { input: '',                      expectValid: false, label: 'Empty string' },
+      { input: '   ',                   expectValid: false, label: 'Whitespace only' },
+      { input: ' Lunch',                expectValid: false, label: 'Leading space' },
+      { input: 'Lunch ',               expectValid: false, label: 'Trailing space' },
+      { input: 'lunch lunch at cafe',   expectValid: false, label: 'Duplicate word (back-reference)' },
+      { input: 'the the cafeteria',     expectValid: false, label: 'Duplicate word "the the"' },
+      { input: 'Bus fare to town',      expectValid: true,  label: 'Multi-word, no duplicates' },
+    ],
+
+    /* --- Amount --- */
+    'Amount': [
+      { input: '12.50',   expectValid: true,  label: 'Standard amount with 2 decimals' },
+      { input: '0.75',    expectValid: true,  label: 'Amount less than 1' },
+      { input: '1500',    expectValid: true,  label: 'Whole number' },
+      { input: '12.5',    expectValid: true,  label: 'One decimal place' },
+      { input: '0',       expectValid: false, label: 'Zero is not valid' },
+      { input: '0.00',    expectValid: false, label: 'Zero with decimals is not valid' },
+      { input: '-5',      expectValid: false, label: 'Negative number' },
+      { input: '12.555',  expectValid: false, label: 'Three decimal places' },
+      { input: '00.50',   expectValid: false, label: 'Leading zero on whole part' },
+      { input: 'abc',     expectValid: false, label: 'Non-numeric string' },
+      { input: '',        expectValid: false, label: 'Empty string' },
+      { input: '.50',     expectValid: false, label: 'No digit before decimal' },
+    ],
+
+    /* --- Date --- */
+    'Date': [
+      { input: '2025-09-29',  expectValid: true,  label: 'Valid date' },
+      { input: '2025-01-01',  expectValid: true,  label: 'Start of year' },
+      { input: '2025-12-31',  expectValid: true,  label: 'End of year' },
+      { input: '29-09-2025',  expectValid: false, label: 'Wrong format DD-MM-YYYY' },
+      { input: '2025/09/29',  expectValid: false, label: 'Slashes instead of hyphens' },
+      { input: '2025-13-01',  expectValid: false, label: 'Month 13 does not exist' },
+      { input: '2025-00-15',  expectValid: false, label: 'Month 00 does not exist' },
+      { input: '2025-09-32',  expectValid: false, label: 'Day 32 does not exist' },
+      { input: '2025-09-00',  expectValid: false, label: 'Day 00 does not exist' },
+      { input: '',            expectValid: false, label: 'Empty string' },
+      { input: '2025-9-29',   expectValid: false, label: 'Month not zero-padded' },
+    ],
+
+    /* --- Category --- */
+    'Category': [
+      { input: 'Food',          expectValid: true,  label: 'Single word' },
+      { input: 'Bus Fare',      expectValid: true,  label: 'Two words with space' },
+      { input: 'Self-Care',     expectValid: true,  label: 'Hyphenated category' },
+      { input: '',              expectValid: false, label: 'Empty string' },
+      { input: '123',           expectValid: false, label: 'Numbers only' },
+      { input: 'Food!',         expectValid: false, label: 'Special character exclamation' },
+      { input: ' Food',         expectValid: false, label: 'Leading space' },
+      { input: 'Food ',         expectValid: false, label: 'Trailing space' },
+      { input: '--Books',       expectValid: false, label: 'Leading hyphens' },
+    ],
+
+  };
+
+
+  /* ============================================================
+     TEST RUNNER
+     ============================================================ */
+
+  /* Map each validator name to its function */
+  const validators = {
+    'Description': validateDescription,
+    'Amount':      validateAmount,
+    'Date':        validateDate,
+    'Category':    validateCategory,
+  };
+
+  let totalPass = 0;
+  let totalFail = 0;
+  const resultsEl = document.getElementById('results');
+
+  /* Run each group of tests */
+  Object.entries(tests).forEach(([groupName, cases]) => {
+    const validatorFn = validators[groupName];
+
+    /* Build a table for this group */
+    let html = '<h2>' + groupName + ' validator</h2>';
+    html += '<table>';
+    html += '<thead><tr><th>Input</th><th>Expected</th><th>Got</th><th>Result</th><th>Label</th></tr></thead>';
+    html += '<tbody>';
+
+    cases.forEach((tc) => {
+      const result   = validatorFn(tc.input);
+      const passed   = result.valid === tc.expectValid;
+
+      if (passed) totalPass++;
+      else        totalFail++;
+
+      const resultLabel = passed
+        ? '<span class="pass">PASS</span>'
+        : '<span class="fail">FAIL</span>';
+
+      const expected = tc.expectValid ? 'valid' : 'invalid';
+      const got      = result.valid   ? 'valid' : 'invalid (' + result.message + ')';
+
+      /* Show the raw input — escape angle brackets so it renders as text */
+      const displayInput = tc.input === ''
+        ? '<em>(empty)</em>'
+        : '<code>' + tc.input.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code>';
+
+      html += '<tr>';
+      html += '<td>' + displayInput + '</td>';
+      html += '<td>' + expected + '</td>';
+      html += '<td>' + got + '</td>';
+      html += '<td>' + resultLabel + '</td>';
+      html += '<td>' + tc.label + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    resultsEl.innerHTML += html;
+  });
+
+
+  /* ============================================================
+     SUMMARY BOX
+     ============================================================ */
+  const summaryEl = document.getElementById('summary');
+  const total     = totalPass + totalFail;
+
+  summaryEl.className = totalFail === 0 ? 'all-pass' : 'has-fail';
+  summaryEl.innerHTML =
+    (totalFail === 0
+      ? 'All ' + total + ' tests passed.'
+      : totalFail + ' of ' + total + ' tests FAILED. Check the table below.');
+
+</script>
+</body>
+</html>
