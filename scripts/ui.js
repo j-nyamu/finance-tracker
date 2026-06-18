@@ -811,23 +811,30 @@ function updateCurrencySymbol() {
  * Fills converter dropdowns with saved currencies.
  */
 function populateCurrencySelects() {
-  const settings   = getSettings();
-  const currencies = [
-    settings.baseCurrency,
-    settings.rates && settings.rates.currency2 ? settings.rates.currency2.code : null,
-    settings.rates && settings.rates.currency3 ? settings.rates.currency3.code : null,
-  ].filter(Boolean);
+  var ALL_CURRENCIES = [
+    { code: 'USD', label: 'USD — US Dollar'      },
+    { code: 'KES', label: 'KES — Kenyan Shilling' },
+    { code: 'RWF', label: 'RWF — Rwandan Franc'   },
+    { code: 'EUR', label: 'EUR — Euro'            },
+    { code: 'GBP', label: 'GBP — British Pound'   },
+  ];
 
-  [convertFromEl, convertToEl].forEach(function(select) {
-    const currentVal = select.value;
-    select.innerHTML = currencies
-      .map(function(c) { return '<option value="' + c + '">' + c + '</option>'; })
-      .join('');
-    if (currencies.indexOf(currentVal) !== -1) select.value = currentVal;
-  });
+  var optionsHtml = ALL_CURRENCIES
+    .map(function(c) { return '<option value="' + c.code + '">' + c.label + '</option>'; })
+    .join('');
 
-  if (convertFromEl.options.length > 0) convertFromEl.selectedIndex = 0;
-  if (convertToEl.options.length > 1)   convertToEl.selectedIndex   = 1;
+  var fromVal = convertFromEl.value;
+  var toVal   = convertToEl.value;
+
+  convertFromEl.innerHTML = optionsHtml;
+  convertToEl.innerHTML   = optionsHtml;
+
+  convertFromEl.value = fromVal || 'USD';
+  convertToEl.value   = toVal   || 'KES';
+
+  if (convertFromEl.value === convertToEl.value) {
+    convertToEl.value = convertFromEl.value === 'KES' ? 'USD' : 'KES';
+  }
 }
 
 /**
@@ -872,14 +879,27 @@ function convertCurrency(amount, fromCode, toCode) {
   if (fromCode === toCode) return amount;
 
   const settings = getSettings();
-  const base     = settings.baseCurrency;
+  const base     = settings.baseCurrency || 'USD';
   const rates    = settings.rates;
 
-  /* Build rate map: { USD: 1, KES: 129.5, EUR: 0.92 } */
-  const rateMap  = {};
-  rateMap[base]  = 1;
-  if (rates && rates.currency2) rateMap[rates.currency2.code] = rates.currency2.rate;
-  if (rates && rates.currency3) rateMap[rates.currency3.code] = rates.currency3.rate;
+  /* Start with fallback USD-based rates so conversion always works
+     even before the user has configured anything in Settings */
+  const rateMap = {
+    USD: 1,
+    KES: 129.50,
+    RWF: 1350.00,
+    EUR: 0.92,
+    GBP: 0.79,
+  };
+
+  /* Override with user-saved rates if available */
+  rateMap[base] = 1;
+  if (rates && rates.currency2 && rates.currency2.rate) {
+    rateMap[rates.currency2.code] = rates.currency2.rate;
+  }
+  if (rates && rates.currency3 && rates.currency3.rate) {
+    rateMap[rates.currency3.code] = rates.currency3.rate;
+  }
 
   if (!(fromCode in rateMap) || !(toCode in rateMap)) return null;
 
