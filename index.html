@@ -189,55 +189,48 @@
         <!-- Currency converter -->
         <div class="conversion-widget" aria-labelledby="conversion-heading">
           <h3 id="conversion-heading">Currency Converter</h3>
+          <div class="conversion-controls">
 
-          <!-- FROM card -->
-          <div class="conv-card">
-            <div class="conv-card-top">
-              <span class="conv-flag" id="conv-from-flag">🇺🇸</span>
-              <div class="conv-card-labels">
-                <select id="convert-from" class="conv-select" aria-label="From currency">
-                  <option value="USD">USD — US DOLLAR</option>
-                  <option value="KES">KES — KENYAN SHILLING</option>
-                  <option value="RWF">RWF — RWANDAN FRANC</option>
-                  <option value="EUR">EUR — EURO</option>
-                  <option value="GBP">GBP — BRITISH POUND</option>
-                </select>
-              </div>
+            <div class="form-group conversion-field">
+              <label for="convert-amount">Amount</label>
+              <input
+                type="number"
+                id="convert-amount"
+                class="input-field"
+                placeholder="0.00"
+                min="0"
+                step="any"
+                aria-describedby="convert-result"
+              />
             </div>
-            <input
-              type="number"
-              id="convert-amount"
-              class="conv-amount-input"
-              placeholder="0"
-              min="0"
-              step="any"
-              aria-label="Amount to convert"
-            />
-          </div>
 
-          <!-- Swap button -->
-          <div class="conv-swap-row">
-            <button id="btn-conv-swap" class="conv-swap-btn" aria-label="Swap currencies">&#8645;</button>
-          </div>
-
-          <!-- TO card -->
-          <div class="conv-card">
-            <div class="conv-card-top">
-              <span class="conv-flag" id="conv-to-flag">🇰🇪</span>
-              <div class="conv-card-labels">
-                <select id="convert-to" class="conv-select" aria-label="To currency">
-                  <option value="USD">USD — US DOLLAR</option>
-                  <option value="KES" selected>KES — KENYAN SHILLING</option>
-                  <option value="RWF">RWF — RWANDAN FRANC</option>
-                  <option value="EUR">EUR — EURO</option>
-                  <option value="GBP">GBP — BRITISH POUND</option>
-                </select>
-              </div>
+            <div class="form-group conversion-field">
+              <label for="convert-from">From</label>
+              <select id="convert-from" class="input-field select-field">
+                <option value="USD">USD — US Dollar</option>
+                <option value="KES">KES — Kenyan Shilling</option>
+                <option value="RWF">RWF — Rwandan Franc</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+              </select>
             </div>
-            <div id="convert-result" class="conv-result-value" aria-live="polite">—</div>
+
+            <span class="conversion-arrow" aria-hidden="true">&#8594;</span>
+
+            <div class="form-group conversion-field">
+              <label for="convert-to">To</label>
+              <select id="convert-to" class="input-field select-field">
+                <option value="USD">USD — US Dollar</option>
+                <option value="KES" selected>KES — Kenyan Shilling</option>
+                <option value="RWF">RWF — Rwandan Franc</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+              </select>
+            </div>
+
           </div>
 
-          <!-- Rate line -->
+          <div id="convert-result" class="conversion-result" aria-live="polite"></div>
           <p id="conv-rate-line" class="conv-rate-line"></p>
         </div>
 

@@ -71,7 +71,6 @@ const trendChartEl        = document.getElementById('trend-chart');
 const convertAmountEl     = document.getElementById('convert-amount');
 const convertFromEl       = document.getElementById('convert-from');
 const convertToEl         = document.getElementById('convert-to');
-const btnConvert          = document.getElementById('btn-convert');
 const convertResultEl     = document.getElementById('convert-result');
 
 /* Records toolbar */
@@ -808,48 +807,29 @@ function updateCurrencySymbol() {
    ============================================================ */
 
 /* ============================================================
-   CURRENCY CONVERTER — Equity style
+   CURRENCY CONVERTER
    ============================================================ */
 
-var CURRENCIES = {
-  USD: { label: 'USD — US DOLLAR',        flag: '🇺🇸' },
-  KES: { label: 'KES — KENYAN SHILLING',  flag: '🇰🇪' },
-  RWF: { label: 'RWF — RWANDAN FRANC',    flag: '🇷🇼' },
-  EUR: { label: 'EUR — EURO',             flag: '🇪🇺' },
-  GBP: { label: 'GBP — BRITISH POUND',    flag: '🇬🇧' },
-};
-
-/* Fallback rates relative to USD */
 var FALLBACK_RATES = { USD: 1, KES: 129.50, RWF: 1350.00, EUR: 0.92, GBP: 0.79 };
 
 function populateCurrencySelects() {
-  /* Selects are already populated in HTML — just sync flags on load */
-  updateConverterFlags();
-}
-
-function updateConverterFlags() {
-  var fromEl = document.getElementById('convert-from');
-  var toEl   = document.getElementById('convert-to');
-  var fromFlag = document.getElementById('conv-from-flag');
-  var toFlag   = document.getElementById('conv-to-flag');
-  if (fromFlag && CURRENCIES[fromEl.value]) fromFlag.textContent = CURRENCIES[fromEl.value].flag;
-  if (toFlag   && CURRENCIES[toEl.value])   toFlag.textContent   = CURRENCIES[toEl.value].flag;
+  /* selects are already built in HTML — nothing to do */
 }
 
 function runConversion() {
+  var amountEl  = document.getElementById('convert-amount');
   var fromEl    = document.getElementById('convert-from');
   var toEl      = document.getElementById('convert-to');
-  var amountEl  = document.getElementById('convert-amount');
   var resultEl  = document.getElementById('convert-result');
-  var rateLineEl = document.getElementById('conv-rate-line');
+  var rateEl    = document.getElementById('conv-rate-line');
 
   var amount   = parseFloat(amountEl.value);
   var fromCode = fromEl.value;
   var toCode   = toEl.value;
 
   if (!amount || isNaN(amount) || amount <= 0) {
-    resultEl.textContent  = '—';
-    rateLineEl.textContent = '';
+    resultEl.textContent = '';
+    rateEl.textContent   = '';
     return;
   }
 
@@ -857,48 +837,22 @@ function runConversion() {
   var rate1  = convertCurrency(1, fromCode, toCode);
 
   if (result === null) {
-    resultEl.textContent   = 'Rate unavailable';
-    rateLineEl.textContent = 'Set rates in Settings to enable conversion.';
+    resultEl.textContent = 'Rate unavailable — set in Settings.';
+    rateEl.textContent   = '';
   } else {
-    resultEl.textContent   = result.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    rateLineEl.textContent = '1 ' + fromCode + ' = ' + rate1.toFixed(4) + ' ' + toCode;
+    resultEl.textContent = amount.toFixed(2) + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
+    rateEl.textContent   = '1 ' + fromCode + ' = ' + rate1.toFixed(4) + ' ' + toCode;
   }
 }
 
 function attachConverterListeners() {
+  var amountEl = document.getElementById('convert-amount');
   var fromEl   = document.getElementById('convert-from');
   var toEl     = document.getElementById('convert-to');
-  var amountEl = document.getElementById('convert-amount');
-  var swapBtn  = document.getElementById('btn-conv-swap');
 
-  fromEl.addEventListener('change', function() {
-    /* Prevent same currency on both sides */
-    if (fromEl.value === toEl.value) {
-      var opts = Array.from(toEl.options).map(function(o) { return o.value; });
-      toEl.value = opts.find(function(v) { return v !== fromEl.value; }) || toEl.value;
-    }
-    updateConverterFlags();
-    runConversion();
-  });
-
-  toEl.addEventListener('change', function() {
-    if (toEl.value === fromEl.value) {
-      var opts = Array.from(fromEl.options).map(function(o) { return o.value; });
-      fromEl.value = opts.find(function(v) { return v !== toEl.value; }) || fromEl.value;
-    }
-    updateConverterFlags();
-    runConversion();
-  });
-
-  amountEl.addEventListener('input', runConversion);
-
-  swapBtn.addEventListener('click', function() {
-    var tmp      = fromEl.value;
-    fromEl.value = toEl.value;
-    toEl.value   = tmp;
-    updateConverterFlags();
-    runConversion();
-  });
+  amountEl.addEventListener('input',  runConversion);
+  fromEl.addEventListener('change',   runConversion);
+  toEl.addEventListener('change',     runConversion);
 }
 
 /**
