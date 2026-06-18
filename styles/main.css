@@ -1,39 +1,45 @@
 /* ============================================================
    STUDENT FINANCE TRACKER — main.css
+   Theme: blue, black, and white.
    Mobile-first. Breakpoints: 360px (base), 768px, 1024px.
-   All layout done with Flexbox. No frameworks.
    ============================================================ */
 
 
 /* ============================================================
-   1. CSS CUSTOM PROPERTIES (design tokens)
-      Change colors/fonts here and they update everywhere.
+   1. CSS CUSTOM PROPERTIES
    ============================================================ */
 :root {
-  /* -- Colors -- */
-  --color-primary:        #2563eb;   /* blue — buttons, links, active nav */
-  --color-primary-dark:   #1d4ed8;   /* darker blue — hover state */
-  --color-primary-light:  #eff6ff;   /* very light blue — active nav bg */
+  /* -- Primary blue palette -- */
+  --color-primary:        #1d4ed8;
+  --color-primary-dark:   #1e3a8a;
+  --color-primary-light:  #dbeafe;
+  --color-primary-mid:    #3b82f6;
+  --color-accent:         #60a5fa;
 
-  --color-danger:         #dc2626;   /* red — delete, errors */
+  /* -- Black and white palette -- */
+  --color-black:          #000000;
+  --color-near-black:     #0f172a;
+  --color-dark:           #1e293b;
+  --color-mid:            #334155;
+  --color-bg:             #f8fafc;
+  --color-surface:        #ffffff;
+  --color-border:         #e2e8f0;
+  --color-border-strong:  #cbd5e1;
+
+  /* -- Text -- */
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted:     #64748b;
+  --color-text-on-dark:   #f1f5f9;
+
+  /* -- Status -- */
+  --color-danger:         #dc2626;
   --color-danger-dark:    #b91c1c;
   --color-danger-light:   #fef2f2;
-
-  --color-success:        #16a34a;   /* green — saved confirmation */
+  --color-success:        #16a34a;
   --color-success-light:  #f0fdf4;
-
-  --color-warning:        #d97706;   /* amber — budget alerts */
+  --color-warning:        #d97706;
   --color-warning-light:  #fffbeb;
-
-  /* -- Neutrals -- */
-  --color-bg:             #f8fafc;   /* page background */
-  --color-surface:        #ffffff;   /* cards, sections */
-  --color-border:         #e2e8f0;   /* subtle borders */
-  --color-border-strong:  #cbd5e1;   /* stronger borders, inputs */
-
-  --color-text-primary:   #0f172a;   /* headings */
-  --color-text-secondary: #475569;   /* body, labels */
-  --color-text-muted:     #94a3b8;   /* hints, placeholders */
 
   /* -- Category badge colors -- */
   --color-food:           #16a34a;
@@ -44,19 +50,20 @@
   --color-other:          #64748b;
 
   /* -- Typography -- */
-  --font-sans:   'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono:   'Courier New', Courier, monospace;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
 
-  --text-xs:    0.75rem;    /* 12px — hints */
-  --text-sm:    0.875rem;   /* 14px — table, labels */
-  --text-base:  1rem;       /* 16px — body */
-  --text-lg:    1.125rem;   /* 18px — subheadings */
-  --text-xl:    1.25rem;    /* 20px */
-  --text-2xl:   1.5rem;     /* 24px */
-  --text-3xl:   1.875rem;   /* 30px — section headings */
-  --text-4xl:   2.25rem;    /* 36px — hero heading */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
 
-  /* -- Spacing scale -- */
+  /* -- Spacing -- */
   --space-1:  0.25rem;
   --space-2:  0.5rem;
   --space-3:  0.75rem;
@@ -69,14 +76,15 @@
   --space-16: 4rem;
 
   /* -- Layout -- */
-  --max-width:      1100px;
-  --section-pad:    var(--space-8);
-  --border-radius:  0.5rem;    /* 8px */
-  --border-radius-lg: 0.75rem; /* 12px */
+  --max-width:       1100px;
+  --section-pad:     var(--space-10);
+  --border-radius:   0.5rem;
+  --border-radius-lg: 0.75rem;
 
   /* -- Shadows -- */
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.10);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.12);
+  --shadow-blue: 0 4px 20px rgba(29,78,216,0.25);
 
   /* -- Transitions -- */
   --transition-fast:   150ms ease;
@@ -85,19 +93,15 @@
 
 
 /* ============================================================
-   2. RESET & BASE
-      Sensible defaults so browser quirks don't surprise you.
+   2. RESET AND BASE
    ============================================================ */
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
-  /* Smooth scroll when nav links jump to sections */
   scroll-behavior: smooth;
   font-size: 16px;
 }
@@ -108,26 +112,14 @@ body {
   color: var(--color-text-secondary);
   background-color: var(--color-bg);
   line-height: 1.6;
-  /* Prevent horizontal overflow on mobile */
   overflow-x: hidden;
 }
 
-/* Remove default list styling for nav lists */
-ul[role="list"] {
-  list-style: none;
-}
+ul[role="list"] { list-style: none; }
 
-/* Make images responsive by default */
-img {
-  max-width: 100%;
-  display: block;
-}
+img { max-width: 100%; display: block; }
 
-/* Inherit font in form elements — browsers don't do this by default */
-input,
-select,
-button,
-textarea {
+input, select, button, textarea {
   font-family: inherit;
   font-size: inherit;
 }
@@ -136,8 +128,6 @@ textarea {
 /* ============================================================
    3. ACCESSIBILITY UTILITIES
    ============================================================ */
-
-/* Skip link — visible only when focused by keyboard */
 .skip-link {
   position: absolute;
   top: -100%;
@@ -152,12 +142,8 @@ textarea {
   transition: top var(--transition-fast);
 }
 
-/* Show skip link when it receives keyboard focus */
-.skip-link:focus {
-  top: var(--space-4);
-}
+.skip-link:focus { top: var(--space-4); }
 
-/* Visually hidden but still readable by screen readers */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -170,10 +156,8 @@ textarea {
   border: 0;
 }
 
-/* Global visible focus ring — applies to all focusable elements.
-   This is what the a11y grader checks — never remove outline entirely. */
 :focus-visible {
-  outline: 3px solid var(--color-primary);
+  outline: 3px solid var(--color-primary-mid);
   outline-offset: 3px;
   border-radius: var(--border-radius);
 }
@@ -182,28 +166,27 @@ textarea {
 /* ============================================================
    4. LAYOUT WRAPPERS
    ============================================================ */
-
-/* Constrains content width and centers it */
 .section-inner,
 .header-inner,
 .footer-inner {
   width: 100%;
   max-width: var(--max-width);
-  margin-inline: auto;       /* centers horizontally */
+  margin-inline: auto;
   padding-inline: var(--space-4);
 }
 
 
 /* ============================================================
-   5. HEADER & NAVIGATION
+   5. HEADER AND NAVIGATION
    ============================================================ */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
+  /* Dark blue-black header */
+  background-color: var(--color-near-black);
+  border-bottom: 2px solid var(--color-primary);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
 
 .header-inner {
@@ -214,47 +197,45 @@ textarea {
   gap: var(--space-4);
 }
 
-/* Brand / logo area */
+/* Brand — bold white text, no emoji */
 .site-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  white-space: nowrap;
 }
 
-.brand-icon {
+.brand-name {
   font-size: var(--text-xl);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* Blue underline accent */
+  border-bottom: 3px solid var(--color-primary-mid);
+  padding-bottom: 2px;
 }
 
-/* Hamburger button — visible only on mobile */
+/* Hamburger button */
 .nav-toggle {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
   background: none;
-  border: none;
+  border: 1px solid var(--color-mid);
   cursor: pointer;
   padding: var(--space-2);
   border-radius: var(--border-radius);
-  /* Always visible on small screens */
 }
 
 .hamburger-bar {
   display: block;
   width: 22px;
   height: 2px;
-  background-color: var(--color-text-primary);
+  background-color: #ffffff;
   border-radius: 2px;
-  /* Animate bars for open/close effect */
-  transition: transform var(--transition-normal),
-              opacity var(--transition-fast);
+  transition: transform var(--transition-normal), opacity var(--transition-fast);
 }
 
-/* Animate hamburger into an X when nav is open */
 .nav-toggle[aria-expanded="true"] .hamburger-bar:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
@@ -265,24 +246,20 @@ textarea {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Mobile nav — hidden by default, shown when toggle is clicked */
+/* Mobile nav */
 .primary-nav {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-md);
+  background-color: var(--color-dark);
+  border-bottom: 2px solid var(--color-primary);
   padding: var(--space-4);
   z-index: 99;
 }
 
-/* JS adds this class to show the mobile nav */
-.primary-nav.is-open {
-  display: block;
-}
+.primary-nav.is-open { display: block; }
 
 .primary-nav ul {
   display: flex;
@@ -293,48 +270,43 @@ textarea {
 .nav-link {
   display: block;
   padding: var(--space-2) var(--space-3);
-  color: var(--color-text-secondary);
+  color: var(--color-text-on-dark);
   text-decoration: none;
   border-radius: var(--border-radius);
   font-weight: 500;
-  transition: background-color var(--transition-fast),
-              color var(--transition-fast);
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .nav-link:hover {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: #ffffff;
 }
 
-/* Active nav link — JS adds this class */
 .nav-link.is-active {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
-  font-weight: 600;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
 }
 
 
 /* ============================================================
    6. APP SECTIONS
-      All sections stack vertically. JS can hide/show them,
-      but they all exist in the DOM for accessibility.
    ============================================================ */
 .app-section {
   padding-block: var(--section-pad);
   border-bottom: 1px solid var(--color-border);
 }
 
-.app-section:last-of-type {
-  border-bottom: none;
-}
+.app-section:last-of-type { border-bottom: none; }
 
-/* Section headings */
 .app-section h1 {
-  font-size: var(--text-3xl);
+  font-size: var(--text-4xl);
   color: var(--color-text-primary);
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: var(--space-3);
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .app-section h2 {
@@ -343,7 +315,7 @@ textarea {
   font-weight: 700;
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
   display: inline-block;
 }
 
@@ -356,25 +328,150 @@ textarea {
 
 
 /* ============================================================
-   7. ABOUT SECTION
+   7. ABOUT SECTION — vibrant dark hero + feature cards
    ============================================================ */
-.about-tagline {
-  font-size: var(--text-xl);
-  color: var(--color-text-primary);
-  font-weight: 600;
+
+/* Hero area — dark background, white text */
+#section-about {
+  background: linear-gradient(135deg, var(--color-near-black) 0%, var(--color-dark) 60%, var(--color-primary-dark) 100%);
+  padding-block: var(--space-16);
+  border-bottom: none;
+}
+
+.about-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  margin-bottom: var(--space-12);
+}
+
+.about-hero-text h1 {
+  color: #ffffff;
+  font-size: var(--text-4xl);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  /* Blue accent underline on the heading */
+  border-bottom: 4px solid var(--color-primary-mid);
+  display: inline-block;
+  padding-bottom: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
+.about-tagline {
+  font-size: var(--text-xl);
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-bottom: var(--space-5);
+  letter-spacing: 0.01em;
+}
+
 .about-description {
-  max-width: 60ch;  /* limit line length for readability */
-  margin-bottom: var(--space-6);
-  color: var(--color-text-secondary);
+  max-width: 64ch;
+  margin-bottom: var(--space-4);
+  color: #cbd5e1;
+  line-height: 1.75;
+  font-size: var(--text-base);
 }
 
 .about-links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* Preview stat cards floating on the right side */
+.about-hero-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-stat-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 300px;
+}
+
+.preview-card {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  backdrop-filter: blur(8px);
+}
+
+.preview-card-accent {
+  background: rgba(29,78,216,0.4);
+  border-color: var(--color-primary-mid);
+}
+
+.preview-value {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-mono);
+}
+
+.preview-label {
+  font-size: var(--text-xs);
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+/* Feature cards row — white cards on dark section */
+.about-features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.about-feature-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.about-feature-card:hover {
+  background: rgba(29,78,216,0.2);
+  border-color: var(--color-primary-mid);
+}
+
+/* Feature icon — bold text character in a blue circle */
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 900;
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.05em;
+}
+
+.about-feature-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: var(--space-2);
+}
+
+.about-feature-card p {
+  color: #94a3b8;
+  font-size: var(--text-sm);
+  line-height: 1.7;
 }
 
 
@@ -393,18 +490,13 @@ textarea {
   text-decoration: none;
   cursor: pointer;
   border: 2px solid transparent;
-  /* Smooth color transition on hover */
-  transition: background-color var(--transition-fast),
-              color var(--transition-fast),
-              border-color var(--transition-fast),
-              transform var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast), transform var(--transition-fast),
+              box-shadow var(--transition-fast);
   white-space: nowrap;
 }
 
-/* Slight lift on click — satisfying micro-interaction */
-.btn:active {
-  transform: scale(0.97);
-}
+.btn:active { transform: scale(0.97); }
 
 .btn-primary {
   background-color: var(--color-primary);
@@ -414,17 +506,34 @@ textarea {
 .btn-primary:hover {
   background-color: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
+  box-shadow: var(--shadow-blue);
 }
 
+/* White outline button for use on dark backgrounds */
 .btn-outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.4);
 }
 .btn-outline:hover {
-  background-color: var(--color-primary-light);
+  background-color: rgba(255,255,255,0.1);
+  border-color: #ffffff;
 }
 
+/* Blue accent button */
+.btn-accent {
+  background-color: var(--color-accent);
+  color: var(--color-near-black);
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+.btn-accent:hover {
+  background-color: var(--color-primary-mid);
+  border-color: var(--color-primary-mid);
+  color: #ffffff;
+}
+
+/* Ghost button — for use on light backgrounds */
 .btn-ghost {
   background-color: transparent;
   color: var(--color-text-secondary);
@@ -435,6 +544,7 @@ textarea {
   color: var(--color-text-primary);
 }
 
+/* Danger button */
 .btn-danger {
   background-color: var(--color-danger);
   color: #ffffff;
@@ -442,14 +552,21 @@ textarea {
 }
 .btn-danger:hover {
   background-color: var(--color-danger-dark);
-  border-color: var(--color-danger-dark);
 }
 
-/* Disabled state */
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Inside the app sections (non-dark bg), outline buttons should be blue */
+.app-section:not(#section-about) .btn-outline {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.app-section:not(#section-about) .btn-outline:hover {
+  background-color: var(--color-primary-light);
 }
 
 
@@ -469,13 +586,8 @@ textarea {
   color: var(--color-text-primary);
 }
 
-/* Required field asterisk */
-.required {
-  color: var(--color-danger);
-  margin-left: var(--space-1);
-}
+.required { color: var(--color-danger); margin-left: var(--space-1); }
 
-/* Shared input/select styles */
 .input-field {
   width: 100%;
   padding: var(--space-2) var(--space-3);
@@ -483,61 +595,40 @@ textarea {
   border-radius: var(--border-radius);
   background-color: var(--color-surface);
   color: var(--color-text-primary);
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.input-field:hover {
-  border-color: var(--color-primary);
-}
+.input-field:hover { border-color: var(--color-primary); }
 
 .input-field:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-  /* Override global :focus-visible so box shadow shows instead */
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
   outline: none;
 }
 
-/* Input with a currency prefix like "$" */
-.input-with-prefix {
+/* Amount field: currency select + number input side by side */
+.input-with-currency {
   display: flex;
-  align-items: center;
-  border: 1.5px solid var(--color-border-strong);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast);
+  gap: var(--space-2);
+  align-items: stretch;
 }
 
-.input-with-prefix:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.input-prefix {
-  padding: var(--space-2) var(--space-3);
-  background-color: var(--color-bg);
-  color: var(--color-text-muted);
+/* The currency select on the amount field */
+.amount-currency-select {
+  width: 90px;
+  flex-shrink: 0;
   font-weight: 600;
-  border-right: 1.5px solid var(--color-border-strong);
-  white-space: nowrap;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
-/* Remove the border from input when it's inside .input-with-prefix */
-.input-with-prefix .input-field {
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.input-with-prefix .input-field:focus {
-  box-shadow: none;
-  outline: none;
+/* The number portion */
+.amount-number-input {
+  flex: 1;
 }
 
 .select-field {
   appearance: none;
-  /* Custom dropdown arrow */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--space-3) center;
@@ -545,31 +636,21 @@ textarea {
   cursor: pointer;
 }
 
-/* Hint text below inputs */
 .field-hint {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 
-/* Error message below inputs */
 .field-error {
   font-size: var(--text-xs);
   color: var(--color-danger);
   font-weight: 500;
-  min-height: 1rem; /* prevents layout shift when error appears/disappears */
+  min-height: 1rem;
 }
 
-/* Red border on invalid inputs — JS adds this class */
-.input-field.is-invalid {
-  border-color: var(--color-danger);
-}
+.input-field.is-invalid { border-color: var(--color-danger); }
+.input-field.is-valid   { border-color: var(--color-success); }
 
-/* Green border on valid inputs — JS adds this class */
-.input-field.is-valid {
-  border-color: var(--color-success);
-}
-
-/* Form action buttons row */
 .form-actions {
   display: flex;
   flex-wrap: wrap;
@@ -577,7 +658,6 @@ textarea {
   margin-top: var(--space-6);
 }
 
-/* Form-level status message — e.g. "Transaction saved" */
 .form-status {
   font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3);
@@ -587,7 +667,6 @@ textarea {
   transition: opacity var(--transition-normal);
 }
 
-/* JS adds these modifier classes */
 .form-status.is-success {
   background-color: var(--color-success-light);
   color: var(--color-success);
@@ -597,10 +676,7 @@ textarea {
   color: var(--color-danger);
 }
 
-/* Transaction form max width */
-.transaction-form {
-  max-width: 560px;
-}
+.transaction-form { max-width: 560px; }
 
 
 /* ============================================================
@@ -608,7 +684,6 @@ textarea {
    ============================================================ */
 .stats-grid {
   display: grid;
-  /* 2 columns on mobile */
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
   margin-bottom: var(--space-8);
@@ -617,17 +692,16 @@ textarea {
 .stat-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
   border-radius: var(--border-radius-lg);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   box-shadow: var(--shadow-sm);
-  /* Subtle pop-in animation on load */
   animation: fadeSlideUp 0.4s ease both;
 }
 
-/* Stagger the card animations */
 .stat-card:nth-child(1) { animation-delay: 0.05s; }
 .stat-card:nth-child(2) { animation-delay: 0.10s; }
 .stat-card:nth-child(3) { animation-delay: 0.15s; }
@@ -635,16 +709,17 @@ textarea {
 
 .stat-value {
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-primary);
   line-height: 1;
+  font-family: var(--font-mono);
 }
 
 .stat-label {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-weight: 600;
 }
 
@@ -661,11 +736,8 @@ textarea {
   box-shadow: var(--shadow-sm);
 }
 
-.chart-title {
-  margin-bottom: var(--space-4);
-}
+.chart-title { margin-bottom: var(--space-4); }
 
-/* The chart itself — bars built by ui.js as divs */
 .trend-chart {
   display: flex;
   align-items: flex-end;
@@ -673,7 +745,6 @@ textarea {
   height: 120px;
 }
 
-/* Each day's bar — width and height set by JS */
 .chart-bar-wrapper {
   flex: 1;
   display: flex;
@@ -686,16 +757,15 @@ textarea {
 
 .chart-bar {
   width: 100%;
-  background-color: var(--color-primary);
+  background: linear-gradient(180deg, var(--color-primary-mid), var(--color-primary));
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   min-height: 4px;
-  /* Animate bar growing upward */
   animation: growUp 0.5s ease both;
-  transition: background-color var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
 .chart-bar:hover {
-  background-color: var(--color-primary-dark);
+  background: linear-gradient(180deg, var(--color-accent), var(--color-primary-mid));
 }
 
 .chart-label {
@@ -714,11 +784,9 @@ textarea {
   margin-bottom: var(--space-6);
   font-weight: 500;
   font-size: var(--text-sm);
-  /* Hidden when empty — JS fills this in */
   display: none;
 }
 
-/* JS adds these classes */
 .budget-alert.is-under {
   display: block;
   background-color: var(--color-success-light);
@@ -731,7 +799,6 @@ textarea {
   background-color: var(--color-warning-light);
   color: var(--color-warning);
   border: 1px solid var(--color-warning);
-  /* Shake animation to draw attention when over budget */
   animation: shake 0.4s ease;
 }
 
@@ -742,6 +809,7 @@ textarea {
 .conversion-widget {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
   border-radius: var(--border-radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
@@ -754,29 +822,40 @@ textarea {
   gap: var(--space-3);
 }
 
-.conversion-controls .input-field {
-  width: auto;
+/* Each field in the converter row */
+.conversion-field {
   flex: 1;
-  min-width: 100px;
+  min-width: 120px;
+  margin-bottom: 0;
 }
 
 .conversion-arrow {
-  font-size: var(--text-xl);
-  color: var(--color-text-muted);
-  padding-bottom: var(--space-2);
+  font-size: var(--text-2xl);
+  color: var(--color-primary);
+  font-weight: 700;
+  padding-bottom: var(--space-3);
+  flex-shrink: 0;
+}
+
+.conversion-btn {
+  /* Align button with bottom of the inputs */
+  align-self: flex-end;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .conversion-result {
-  margin-top: var(--space-3);
-  font-size: var(--text-lg);
-  font-weight: 600;
+  margin-top: var(--space-4);
+  font-size: var(--text-xl);
+  font-weight: 700;
   color: var(--color-primary);
-  min-height: 1.5rem;
+  font-family: var(--font-mono);
+  min-height: 1.75rem;
 }
 
 
 /* ============================================================
-   14. RECORDS TOOLBAR (search, sort, filter)
+   14. RECORDS TOOLBAR
    ============================================================ */
 .records-toolbar {
   display: flex;
@@ -817,7 +896,7 @@ textarea {
    15. RECORDS TABLE
    ============================================================ */
 .table-wrapper {
-  overflow-x: auto;           /* horizontal scroll on small screens */
+  overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
@@ -831,16 +910,18 @@ textarea {
 }
 
 .records-table thead {
-  background-color: var(--color-bg);
-  border-bottom: 2px solid var(--color-border);
+  background-color: var(--color-near-black);
 }
 
 .records-table th {
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #ffffff;
   white-space: nowrap;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .records-table td {
@@ -850,37 +931,33 @@ textarea {
   vertical-align: middle;
 }
 
-/* Remove bottom border from last row */
-.records-table tbody tr:last-child td {
-  border-bottom: none;
-}
+.records-table tbody tr:last-child td { border-bottom: none; }
 
-/* Row hover highlight */
 .records-table tbody tr {
   transition: background-color var(--transition-fast);
 }
+
 .records-table tbody tr:hover {
   background-color: var(--color-primary-light);
 }
 
-/* New row pop-in animation — JS adds this class */
 .records-table tbody tr.row-new {
   animation: fadeSlideUp 0.3s ease both;
 }
 
-/* Search highlight — matches wrapped in <mark> by search.js */
+/* Search match highlight */
 mark {
-  background-color: #fef08a;  /* yellow */
+  background-color: #fef08a;
   color: var(--color-text-primary);
   border-radius: 2px;
   padding: 0 2px;
 }
 
-/* Category badges in the table */
+/* Category badges */
 .badge {
   display: inline-block;
   padding: var(--space-1) var(--space-2);
-  border-radius: 999px;   /* pill shape */
+  border-radius: 999px;
   font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -895,7 +972,6 @@ mark {
 .badge-fees          { background-color: var(--color-fees); }
 .badge-other         { background-color: var(--color-other); }
 
-/* Amount column — always monospaced so digits align */
 .amount-cell {
   font-family: var(--font-mono);
   font-weight: 600;
@@ -903,11 +979,7 @@ mark {
   white-space: nowrap;
 }
 
-/* Action buttons inside table rows */
-.row-actions {
-  display: flex;
-  gap: var(--space-2);
-}
+.row-actions { display: flex; gap: var(--space-2); }
 
 .btn-icon {
   background: none;
@@ -916,14 +988,15 @@ mark {
   padding: var(--space-1) var(--space-2);
   cursor: pointer;
   font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--color-text-secondary);
-  transition: background-color var(--transition-fast),
-              color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .btn-icon:hover {
   background-color: var(--color-primary-light);
   color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .btn-icon.btn-icon-danger:hover {
@@ -932,20 +1005,17 @@ mark {
   border-color: var(--color-danger);
 }
 
-/* Empty state — shown when no records match */
 .empty-state {
   text-align: center;
   padding: var(--space-16) var(--space-4);
   color: var(--color-text-muted);
 }
 
-.empty-state p {
-  margin-bottom: var(--space-4);
-}
+.empty-state p { margin-bottom: var(--space-4); }
 
 
 /* ============================================================
-   16. SETTINGS PAGE
+   16. SETTINGS
    ============================================================ */
 .settings-group {
   border: 1px solid var(--color-border);
@@ -968,7 +1038,6 @@ mark {
   margin-bottom: var(--space-4);
 }
 
-/* Side-by-side currency code + rate value */
 .rate-row {
   display: flex;
   gap: var(--space-3);
@@ -979,7 +1048,6 @@ mark {
   flex-shrink: 0;
 }
 
-/* Import / export action pairs */
 .import-export-actions {
   display: flex;
   flex-direction: column;
@@ -997,7 +1065,6 @@ mark {
   color: var(--color-text-secondary);
 }
 
-/* Danger zone */
 .danger-zone {
   margin-top: var(--space-8);
   padding-top: var(--space-6);
@@ -1017,24 +1084,20 @@ mark {
 
 
 /* ============================================================
-   17. CONFIRM DELETE DIALOG
+   17. DELETE DIALOG
    ============================================================ */
 .dialog-overlay {
   position: fixed;
-  inset: 0;               /* covers the entire viewport */
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
-  /* Fade in */
   animation: fadeIn 0.2s ease;
 }
 
-/* hidden attribute hides the overlay entirely */
-.dialog-overlay[hidden] {
-  display: none;
-}
+.dialog-overlay[hidden] { display: none; }
 
 .dialog-box {
   background-color: var(--color-surface);
@@ -1043,6 +1106,7 @@ mark {
   max-width: 400px;
   width: 90%;
   box-shadow: var(--shadow-md);
+  border-top: 4px solid var(--color-danger);
   animation: fadeSlideUp 0.25s ease;
 }
 
@@ -1052,6 +1116,7 @@ mark {
   border: none;
   padding: 0;
   display: block;
+  color: var(--color-text-primary);
 }
 
 .dialog-box p {
@@ -1070,63 +1135,43 @@ mark {
    18. FOOTER
    ============================================================ */
 .site-footer {
-  background-color: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  background-color: var(--color-near-black);
+  border-top: 2px solid var(--color-primary);
   padding-block: var(--space-6);
-  margin-top: var(--space-8);
 }
 
 .site-footer p {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: #64748b;
   text-align: center;
 }
 
 .site-footer a {
-  color: var(--color-primary);
+  color: var(--color-accent);
   text-decoration: none;
 }
 
-.site-footer a:hover {
-  text-decoration: underline;
-}
+.site-footer a:hover { text-decoration: underline; }
 
 
 /* ============================================================
    19. KEYFRAME ANIMATIONS
    ============================================================ */
-
-/* Cards and rows sliding up on load */
 @keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Chart bars growing upward */
 @keyframes growUp {
-  from {
-    transform: scaleY(0);
-    transform-origin: bottom;
-  }
-  to {
-    transform: scaleY(1);
-    transform-origin: bottom;
-  }
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
 }
 
-/* Dialog backdrop fade in */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* Budget overage shake */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20%       { transform: translateX(-6px); }
@@ -1135,11 +1180,8 @@ mark {
   80%       { transform: translateX(4px); }
 }
 
-/* Respect user's motion preference — disables all animations */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
@@ -1147,17 +1189,14 @@ mark {
 
 
 /* ============================================================
-   20. RESPONSIVE — TABLET (768px and up)
+   20. RESPONSIVE — TABLET 768px
    ============================================================ */
 @media (min-width: 768px) {
 
-  /* Show full nav, hide hamburger */
-  .nav-toggle {
-    display: none;
-  }
+  .nav-toggle { display: none; }
 
   .primary-nav {
-    display: block;         /* always visible on tablet+ */
+    display: block;
     position: static;
     border: none;
     box-shadow: none;
@@ -1166,11 +1205,26 @@ mark {
   }
 
   .primary-nav ul {
-    flex-direction: row;    /* nav items side by side */
+    flex-direction: row;
     gap: var(--space-1);
   }
 
-  /* Toolbar goes side by side */
+  .about-hero {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .about-hero-text { flex: 1; }
+
+  .about-hero-visual {
+    flex: 0 0 260px;
+    justify-content: flex-end;
+  }
+
+  .about-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .records-toolbar {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1182,21 +1236,14 @@ mark {
     min-width: 200px;
   }
 
-  /* Stats: 4 columns on tablet */
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  /* Import/export side by side */
-  .import-export-actions {
-    flex-direction: row;
-  }
+  .import-export-actions { flex-direction: row; }
 
-  .io-group {
-    flex: 1;
-  }
+  .io-group { flex: 1; }
 
-  /* Section padding increase */
   .section-inner,
   .header-inner,
   .footer-inner {
@@ -1206,14 +1253,15 @@ mark {
 
 
 /* ============================================================
-   21. RESPONSIVE — DESKTOP (1024px and up)
+   21. RESPONSIVE — DESKTOP 1024px
    ============================================================ */
 @media (min-width: 1024px) {
 
-  /* More breathing room on larger screens */
-  .app-section {
-    padding-block: var(--space-12);
+  .about-features {
+    grid-template-columns: repeat(4, 1fr);
   }
+
+  .app-section { padding-block: var(--space-12); }
 
   .section-inner,
   .header-inner,
@@ -1221,15 +1269,5 @@ mark {
     padding-inline: var(--space-10);
   }
 
-  /* Conversion controls all in one row */
-  .conversion-controls {
-    flex-wrap: nowrap;
-  }
-
-  /* Settings: two columns for fieldsets */
-  .settings-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
-  }
+  .conversion-controls { flex-wrap: nowrap; }
 }
