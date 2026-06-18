@@ -678,6 +678,34 @@ input, select, button, textarea {
 
 .transaction-form { max-width: 560px; }
 
+/* Import discoverability hint on the Add/Edit page */
+.import-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--color-primary);
+}
+
+/* Inline button styled to look like a text link */
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--color-primary-dark);
+}
+
 
 /* ============================================================
    10. DASHBOARD — STATS GRID
