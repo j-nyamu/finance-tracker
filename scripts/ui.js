@@ -98,7 +98,6 @@ const categoryError        = document.getElementById('category-error');
 const dateError            = document.getElementById('date-error');
 const btnSubmit            = document.getElementById('btn-submit');
 const btnCancel            = document.getElementById('btn-cancel');
-const amountCurrencySymbol = document.getElementById('amount-currency-symbol');
 
 /* Settings */
 const settingBudgetCap    = document.getElementById('setting-budget-cap');
@@ -156,8 +155,7 @@ function init() {
   renderDashboard();
   renderTable();
   populateCategoryFilter();
-  populateCurrencySelects();
-  loadSettingsIntoForm();
+    loadSettingsIntoForm();
 
   /* Attach all event listeners */
   attachNavListeners();
@@ -167,8 +165,7 @@ function init() {
   attachSettingsListeners();
   attachDialogListeners();
   attachImportExportListeners();
-  attachConverterListeners();
-
+  
   /* Show the about section by default */
   showSection('about');
 }
@@ -303,8 +300,7 @@ function renderDashboard() {
   renderTrendChart();
 
   /* Currency selects */
-  populateCurrencySelects();
-}
+  }
 
 /**
  * renderBudgetAlert
@@ -726,8 +722,7 @@ function loadSettingsIntoForm() {
     settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate  : '';
   }
 
-  updateCurrencySymbol();
-}
+  }
 
 /**
  * attachSettingsListeners
@@ -755,9 +750,7 @@ function attachSettingsListeners() {
         },
       },
     });
-    updateCurrencySymbol();
-    populateCurrencySelects();
-    showSettingsStatus('Currency settings saved.');
+            showSettingsStatus('Currency settings saved.');
   });
 
   settingBaseCurrency.addEventListener('change', updateCurrencySymbol);
@@ -789,137 +782,6 @@ function showSettingsStatus(message) {
     settingsStatusEl.className   = 'form-status';
   }, 3000);
 }
-
-/**
- * updateCurrencySymbol
- * Updates the prefix symbol next to the amount input.
- */
-function updateCurrencySymbol() {
-  const symbols  = { USD: '$', KES: 'KES', RWF: 'RWF', EUR: '€', GBP: '£' };
-  const settings = getSettings();
-  const code     = (settingBaseCurrency && settingBaseCurrency.value) || settings.baseCurrency || 'USD';
-  if (amountCurrencySymbol) {
-    amountCurrencySymbol.textContent = symbols[code] || code;
-  }
-}
-
-
-/* ============================================================
-   CURRENCY CONVERTER
-   ============================================================ */
-
-/* ============================================================
-   CURRENCY CONVERTER
-   ============================================================ */
-
-var FALLBACK_RATES = { USD: 1, KES: 129.50, RWF: 1350.00, EUR: 0.92, GBP: 0.79 };
-
-function populateCurrencySelects() {
-  var settings = getSettings();
-  var base = settings.baseCurrency || 'USD';
-  var currencies = ['USD', 'KES', 'RWF', 'EUR', 'GBP'];
-
-  var fromEl = document.getElementById('convert-from');
-  var toEl = document.getElementById('convert-to');
-  if (!fromEl || !toEl) return;
-
-  fromEl.innerHTML = '';
-  toEl.innerHTML = '';
-
-  currencies.forEach(function(code) {
-    var opt1 = document.createElement('option');
-    opt1.value = code;
-    opt1.textContent = code;
-    if (code === base) opt1.selected = true;
-    fromEl.appendChild(opt1);
-
-    var opt2 = document.createElement('option');
-    opt2.value = code;
-    opt2.textContent = code;
-    if (code !== base) opt2.selected = true;
-    toEl.appendChild(opt2);
-  });
-}
-
-function runConversion() {
-  var amountEl = document.getElementById('convert-amount');
-  var fromEl   = document.getElementById('convert-from');
-  var toEl     = document.getElementById('convert-to');
-  var resultEl = document.getElementById('convert-result');
-
-  if (!amountEl || !fromEl || !toEl || !resultEl) return;
-
-  var amount   = parseFloat(amountEl.value);
-  var fromCode = fromEl.value;
-  var toCode   = toEl.value;
-
-  if (!amount || isNaN(amount) || amount <= 0) {
-    resultEl.textContent = 'Enter an amount above to convert.';
-    return;
-  }
-
-  var result = convertCurrency(amount, fromCode, toCode);
-
-  if (result === null) {
-    resultEl.textContent = 'Rate unavailable — set in Settings.';
-  } else {
-    resultEl.textContent = amount.toFixed(2) + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
-  }
-}
-
-function attachConverterListeners() {
-  var amountEl = document.getElementById('convert-amount');
-  var fromEl   = document.getElementById('convert-from');
-  var toEl     = document.getElementById('convert-to');
-  var btnEl    = document.getElementById('convert-btn');
-
-  if (amountEl) amountEl.addEventListener('input',  runConversion);
-  if (fromEl)   fromEl.addEventListener('change',   runConversion);
-  if (toEl)     toEl.addEventListener('change',     runConversion);
-  if (btnEl)    btnEl.addEventListener('click',      runConversion);
-}
-
-/**
- * attachImportExportListeners
- * Also wires the currency convert button.
- */
-function attachImportExportListeners() {
-  btnExport.addEventListener('click', handleExport);
-  importFileEl.addEventListener('change', handleImport);
-}
-
-/**
- * convertCurrency
- * Converts between two currencies using saved rates.
- *
- * @param {number} amount
- * @param {string} fromCode
- * @param {string} toCode
- * @returns {number|null}
- */
-function convertCurrency(amount, fromCode, toCode) {
-  if (fromCode === toCode) return amount;
-
-  const settings = getSettings();
-  const base     = settings.baseCurrency || 'USD';
-  const rates    = settings.rates;
-
-  /* Start with fallback rates then override with user-saved ones */
-  var rateMap = Object.assign({}, FALLBACK_RATES);
-  rateMap[base] = 1;
-  if (rates && rates.currency2 && rates.currency2.rate) rateMap[rates.currency2.code] = rates.currency2.rate;
-  if (rates && rates.currency3 && rates.currency3.rate) rateMap[rates.currency3.code] = rates.currency3.rate;
-
-  if (!(fromCode in rateMap) || !(toCode in rateMap)) return null;
-
-  const inBase = amount / rateMap[fromCode];
-  return inBase * rateMap[toCode];
-}
-
-
-/* ============================================================
-   IMPORT / EXPORT
-   ============================================================ */
 
 /**
  * handleExport

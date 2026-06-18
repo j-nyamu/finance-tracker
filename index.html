@@ -127,51 +127,11 @@
           </div>
 
           <div class="about-feature-card">
-            <div class="feature-icon" aria-hidden="true">FX</div>
-            <h3 class="about-feature-title">Currency Converter</h3>
-            <p>Work in USD, KES, RWF, EUR, or GBP. Set your base currency and conversion rates in Settings, then convert any amount between them directly on the dashboard.</p>
-          </div>
-
-          <div class="about-feature-card">
             <div class="feature-icon" aria-hidden="true">OL</div>
             <h3 class="about-feature-title">Offline First</h3>
             <p>All your data is saved in your browser's localStorage. No sign-up, no server, no internet required. Export to JSON anytime and import it back on any device.</p>
           </div>
 
-        <!-- Currency Converter -->
-        <div class="conversion-widget" aria-label="Currency converter">
-          <h3 class="chart-title">Currency Converter</h3>
-          <div class="conversion-controls">
-            <div class="conversion-field form-group">
-              <label for="convert-amount">Amount</label>
-              <input type="number" id="convert-amount" class="input-field" placeholder="0.00" min="0" step="0.01" />
-            </div>
-            <span class="conversion-arrow" aria-hidden="true">→</span>
-            <div class="conversion-field form-group">
-              <label for="convert-from">From</label>
-              <select id="convert-from" class="input-field select-field">
-                <option value="USD">USD</option>
-                <option value="KES">KES</option>
-                <option value="RWF">RWF</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-            </div>
-            <span class="conversion-arrow" aria-hidden="true">→</span>
-            <div class="conversion-field form-group">
-              <label for="convert-to">To</label>
-              <select id="convert-to" class="input-field select-field">
-                <option value="KES">KES</option>
-                <option value="USD">USD</option>
-                <option value="RWF">RWF</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-            </div>
-            <button id="convert-btn" class="btn btn-primary conversion-btn">Convert</button>
-          </div>
-          <p id="convert-result" class="conversion-result">Enter an amount above to convert.</p>
-        </div>
         </div>
 
       </div>
@@ -341,17 +301,7 @@
             <label for="field-amount">
               Amount <span class="required" aria-hidden="true">*</span>
             </label>
-            <div class="input-with-currency">
-              <label for="field-amount-currency" class="visually-hidden">Transaction currency</label>
-              <select id="field-amount-currency" class="input-field select-field amount-currency-select">
-                <option value="USD">USD</option>
-                <option value="KES">KES</option>
-                <option value="RWF">RWF</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-              <span id="amount-currency-symbol" class="amount-currency-symbol" aria-hidden="true">$</span>
-              <input
+                        <input
                 type="text"
                 id="field-amount"
                 class="input-field amount-number-input"
@@ -361,7 +311,7 @@
                 aria-describedby="amount-error amount-hint"
                 inputmode="decimal"
               />
-            </div>
+
             <span id="amount-hint" class="field-hint">Positive number, up to 2 decimal places (e.g. 12.50).</span>
             <span id="amount-error" class="field-error" role="alert" aria-live="assertive"></span>
           </div>
