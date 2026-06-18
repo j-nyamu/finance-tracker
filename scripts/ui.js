@@ -168,6 +168,7 @@ function init() {
   attachSettingsListeners();
   attachDialogListeners();
   attachImportExportListeners();
+  attachConverterListeners();
 
   /* Show the about section by default */
   showSection('about');
@@ -806,35 +807,98 @@ function updateCurrencySymbol() {
    CURRENCY CONVERTER
    ============================================================ */
 
-/**
- * populateCurrencySelects
- * Fills converter dropdowns with saved currencies.
- */
+/* ============================================================
+   CURRENCY CONVERTER — Equity style
+   ============================================================ */
+
+var CURRENCIES = {
+  USD: { label: 'USD — US DOLLAR',        flag: '🇺🇸' },
+  KES: { label: 'KES — KENYAN SHILLING',  flag: '🇰🇪' },
+  RWF: { label: 'RWF — RWANDAN FRANC',    flag: '🇷🇼' },
+  EUR: { label: 'EUR — EURO',             flag: '🇪🇺' },
+  GBP: { label: 'GBP — BRITISH POUND',    flag: '🇬🇧' },
+};
+
+/* Fallback rates relative to USD */
+var FALLBACK_RATES = { USD: 1, KES: 129.50, RWF: 1350.00, EUR: 0.92, GBP: 0.79 };
+
 function populateCurrencySelects() {
-  var ALL_CURRENCIES = [
-    { code: 'USD', label: 'USD — US Dollar'      },
-    { code: 'KES', label: 'KES — Kenyan Shilling' },
-    { code: 'RWF', label: 'RWF — Rwandan Franc'   },
-    { code: 'EUR', label: 'EUR — Euro'            },
-    { code: 'GBP', label: 'GBP — British Pound'   },
-  ];
+  /* Selects are already populated in HTML — just sync flags on load */
+  updateConverterFlags();
+}
 
-  var optionsHtml = ALL_CURRENCIES
-    .map(function(c) { return '<option value="' + c.code + '">' + c.label + '</option>'; })
-    .join('');
+function updateConverterFlags() {
+  var fromEl = document.getElementById('convert-from');
+  var toEl   = document.getElementById('convert-to');
+  var fromFlag = document.getElementById('conv-from-flag');
+  var toFlag   = document.getElementById('conv-to-flag');
+  if (fromFlag && CURRENCIES[fromEl.value]) fromFlag.textContent = CURRENCIES[fromEl.value].flag;
+  if (toFlag   && CURRENCIES[toEl.value])   toFlag.textContent   = CURRENCIES[toEl.value].flag;
+}
 
-  var fromVal = convertFromEl.value;
-  var toVal   = convertToEl.value;
+function runConversion() {
+  var fromEl    = document.getElementById('convert-from');
+  var toEl      = document.getElementById('convert-to');
+  var amountEl  = document.getElementById('convert-amount');
+  var resultEl  = document.getElementById('convert-result');
+  var rateLineEl = document.getElementById('conv-rate-line');
 
-  convertFromEl.innerHTML = optionsHtml;
-  convertToEl.innerHTML   = optionsHtml;
+  var amount   = parseFloat(amountEl.value);
+  var fromCode = fromEl.value;
+  var toCode   = toEl.value;
 
-  convertFromEl.value = fromVal || 'USD';
-  convertToEl.value   = toVal   || 'KES';
-
-  if (convertFromEl.value === convertToEl.value) {
-    convertToEl.value = convertFromEl.value === 'KES' ? 'USD' : 'KES';
+  if (!amount || isNaN(amount) || amount <= 0) {
+    resultEl.textContent  = '—';
+    rateLineEl.textContent = '';
+    return;
   }
+
+  var result = convertCurrency(amount, fromCode, toCode);
+  var rate1  = convertCurrency(1, fromCode, toCode);
+
+  if (result === null) {
+    resultEl.textContent   = 'Rate unavailable';
+    rateLineEl.textContent = 'Set rates in Settings to enable conversion.';
+  } else {
+    resultEl.textContent   = result.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    rateLineEl.textContent = '1 ' + fromCode + ' = ' + rate1.toFixed(4) + ' ' + toCode;
+  }
+}
+
+function attachConverterListeners() {
+  var fromEl   = document.getElementById('convert-from');
+  var toEl     = document.getElementById('convert-to');
+  var amountEl = document.getElementById('convert-amount');
+  var swapBtn  = document.getElementById('btn-conv-swap');
+
+  fromEl.addEventListener('change', function() {
+    /* Prevent same currency on both sides */
+    if (fromEl.value === toEl.value) {
+      var opts = Array.from(toEl.options).map(function(o) { return o.value; });
+      toEl.value = opts.find(function(v) { return v !== fromEl.value; }) || toEl.value;
+    }
+    updateConverterFlags();
+    runConversion();
+  });
+
+  toEl.addEventListener('change', function() {
+    if (toEl.value === fromEl.value) {
+      var opts = Array.from(fromEl.options).map(function(o) { return o.value; });
+      fromEl.value = opts.find(function(v) { return v !== toEl.value; }) || fromEl.value;
+    }
+    updateConverterFlags();
+    runConversion();
+  });
+
+  amountEl.addEventListener('input', runConversion);
+
+  swapBtn.addEventListener('click', function() {
+    var tmp      = fromEl.value;
+    fromEl.value = toEl.value;
+    toEl.value   = tmp;
+    updateConverterFlags();
+    runConversion();
+  });
 }
 
 /**
@@ -842,26 +906,6 @@ function populateCurrencySelects() {
  * Also wires the currency convert button.
  */
 function attachImportExportListeners() {
-  btnConvert.addEventListener('click', function() {
-    const amount   = parseFloat(convertAmountEl.value);
-    const fromCode = convertFromEl.value;
-    const toCode   = convertToEl.value;
-
-    if (isNaN(amount) || amount <= 0) {
-      convertResultEl.textContent = 'Enter a valid amount to convert.';
-      return;
-    }
-
-    const result = convertCurrency(amount, fromCode, toCode);
-
-    if (result === null) {
-      convertResultEl.textContent = 'Conversion rate not available. Check Settings.';
-    } else {
-      convertResultEl.textContent =
-        amount + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
-    }
-  });
-
   btnExport.addEventListener('click', handleExport);
   importFileEl.addEventListener('change', handleImport);
 }
@@ -882,28 +926,14 @@ function convertCurrency(amount, fromCode, toCode) {
   const base     = settings.baseCurrency || 'USD';
   const rates    = settings.rates;
 
-  /* Start with fallback USD-based rates so conversion always works
-     even before the user has configured anything in Settings */
-  const rateMap = {
-    USD: 1,
-    KES: 129.50,
-    RWF: 1350.00,
-    EUR: 0.92,
-    GBP: 0.79,
-  };
-
-  /* Override with user-saved rates if available */
+  /* Start with fallback rates then override with user-saved ones */
+  var rateMap = Object.assign({}, FALLBACK_RATES);
   rateMap[base] = 1;
-  if (rates && rates.currency2 && rates.currency2.rate) {
-    rateMap[rates.currency2.code] = rates.currency2.rate;
-  }
-  if (rates && rates.currency3 && rates.currency3.rate) {
-    rateMap[rates.currency3.code] = rates.currency3.rate;
-  }
+  if (rates && rates.currency2 && rates.currency2.rate) rateMap[rates.currency2.code] = rates.currency2.rate;
+  if (rates && rates.currency3 && rates.currency3.rate) rateMap[rates.currency3.code] = rates.currency3.rate;
 
   if (!(fromCode in rateMap) || !(toCode in rateMap)) return null;
 
-  /* Convert via base currency as the middle step */
   const inBase = amount / rateMap[fromCode];
   return inBase * rateMap[toCode];
 }
