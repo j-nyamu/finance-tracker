@@ -99,8 +99,7 @@ const categoryError        = document.getElementById('category-error');
 const dateError            = document.getElementById('date-error');
 const btnSubmit            = document.getElementById('btn-submit');
 const btnCancel            = document.getElementById('btn-cancel');
-/* Currency selector on the Add/Edit form — replaces the old symbol span */
-const fieldAmountCurrency  = document.getElementById('field-amount-currency');
+const amountCurrencySymbol = document.getElementById('amount-currency-symbol');
 
 /* Settings */
 const settingBudgetCap    = document.getElementById('setting-budget-cap');
@@ -148,6 +147,9 @@ let activeRegex = null;
  * Loads data, renders everything, attaches event listeners.
  */
 function init() {
+  /* Hide all sections immediately so none flash visible before init completes */
+  allSections.forEach(function(section) { section.hidden = true; });
+
   /* Load data from localStorage into memory */
   initState();
 
@@ -191,14 +193,16 @@ function showSection(sectionName) {
 
   /* Show the target section */
   const target = document.getElementById('section-' + sectionName);
-  if (target) {
-    target.hidden = false;
-    /* Move focus to the section heading for keyboard users */
-    const heading = target.querySelector('h1, h2');
-    if (heading) {
-      heading.setAttribute('tabindex', '-1');
-      heading.focus();
-    }
+  if (!target) {
+    console.warn('[ui] showSection: no section found for "' + sectionName + '"');
+    return;
+  }
+  target.hidden = false;
+  /* Move focus to the section heading for keyboard users */
+  const heading = target.querySelector('h1, h2');
+  if (heading) {
+    heading.setAttribute('tabindex', '-1');
+    heading.focus();
   }
 
   /* Update active state on nav links */
@@ -247,6 +251,17 @@ function attachNavListeners() {
       primaryNav.classList.remove('is-open');
       navToggleBtn.setAttribute('aria-expanded', 'false');
     }
+  });
+
+  /* data-goto buttons — e.g. "Add a Transaction" on the About page */
+  document.addEventListener('click', function(e) {
+    var gotoBtn = e.target.closest('[data-goto]');
+    if (!gotoBtn) return;
+    e.preventDefault();
+    var dest = gotoBtn.dataset.goto;
+    if (dest === 'dashboard') renderDashboard();
+    if (dest === 'records')   renderTable();
+    showSection(dest);
   });
 }
 
@@ -403,17 +418,16 @@ function renderTable() {
  * @returns {string}
  */
 function buildTableRow(record) {
-  /* Use the currency stored on the record, fall back to base currency */
-  var recordCurrency      = record.currency || getSettings().baseCurrency || 'USD';
-  var highlightedDesc     = highlight(record.description, activeRegex);
-  var highlightedCat      = highlight(record.category, activeRegex);
-  var badgeClass          = 'badge badge-' + record.category.toLowerCase().replace(/\s+/g, '-');
+  const settings          = getSettings();
+  const highlightedDesc   = highlight(record.description, activeRegex);
+  const highlightedCat    = highlight(record.category, activeRegex);
+  const badgeClass        = 'badge badge-' + record.category.toLowerCase().replace(/\s+/g, '-');
 
   return '<tr data-id="' + record.id + '" class="row-new">' +
     '<td>' + escapeForAttr(record.date) + '</td>' +
     '<td>' + highlightedDesc + '</td>' +
     '<td><span class="' + badgeClass + '">' + highlightedCat + '</span></td>' +
-    '<td class="amount-cell">' + formatCurrency(record.amount, recordCurrency) + '</td>' +
+    '<td class="amount-cell">' + formatCurrency(record.amount, settings.baseCurrency) + '</td>' +
     '<td class="row-actions">' +
       '<button class="btn-icon" data-action="edit" data-id="' + record.id + '" ' +
         'aria-label="Edit transaction: ' + escapeForAttr(record.description) + '">Edit</button>' +
@@ -521,18 +535,6 @@ function attachFormListeners() {
     resetForm();
     showSection('records');
   });
-
-  /* When the user changes the currency on the form, nothing extra needed —
-     the select value is read directly on submit via fieldAmountCurrency.value */
-
-  /* About page "Add a Transaction" button */
-  document.addEventListener('click', function(e) {
-    var gotoBtn = e.target.closest('[data-goto]');
-    if (gotoBtn) {
-      e.preventDefault();
-      showSection(gotoBtn.dataset.goto);
-    }
-  });
 }
 
 /**
@@ -571,8 +573,6 @@ function handleFormSubmit(e) {
     amount:      parseFloat(fields.amount),
     category:    fields.category,
     date:        fields.date,
-    /* Store the currency the user selected on the form */
-    currency:    fieldAmountCurrency ? fieldAmountCurrency.value : (getSettings().baseCurrency || 'USD'),
   };
 
   if (editingId) {
@@ -606,10 +606,6 @@ function handleEditClick(id) {
   fieldAmount.value      = String(record.amount);
   fieldCategory.value    = record.category;
   fieldDate.value        = record.date;
-  /* Restore the currency that was saved with this record */
-  if (fieldAmountCurrency) {
-    fieldAmountCurrency.value = record.currency || getSettings().baseCurrency || 'USD';
-  }
 
   formHeading.textContent = 'Edit Transaction';
   btnSubmit.textContent   = 'Update Transaction';
@@ -796,17 +792,13 @@ function showSettingsStatus(message) {
 
 /**
  * updateCurrencySymbol
- * Now syncs the currency select on the Add/Edit form
- * to match the base currency from Settings.
- * Users can still override it per-transaction.
+ * Updates the prefix symbol next to the amount input.
  */
 function updateCurrencySymbol() {
-  var settings = getSettings();
-  var code     = (settingBaseCurrency && settingBaseCurrency.value) || settings.baseCurrency || 'USD';
-  /* Set the form currency select to match base currency */
-  if (fieldAmountCurrency) {
-    fieldAmountCurrency.value = code;
-  }
+  const symbols  = { USD: '$', KES: 'KES', RWF: 'RWF', EUR: '€', GBP: '£' };
+  const settings = getSettings();
+  const code     = (settingBaseCurrency && settingBaseCurrency.value) || settings.baseCurrency || 'USD';
+  amountCurrencySymbol.textContent = symbols[code] || code;
 }
 
 
@@ -816,124 +808,26 @@ function updateCurrencySymbol() {
 
 /**
  * populateCurrencySelects
- * All 5 currencies are always available in the converter.
- * Defaults: From = USD, To = KES.
- * After populating, wires up the sync so the same currency
- * cannot be selected on both sides at the same time.
+ * Fills converter dropdowns with saved currencies.
  */
 function populateCurrencySelects() {
-  /* All supported currencies — hardcoded so they are always available
-     regardless of what the user has configured in Settings */
-  var ALL_CURRENCIES = [
-    { code: 'USD', label: 'USD — US Dollar'       },
-    { code: 'KES', label: 'KES — Kenyan Shilling'  },
-    { code: 'RWF', label: 'RWF — Rwandan Franc'    },
-    { code: 'EUR', label: 'EUR — Euro'             },
-    { code: 'GBP', label: 'GBP — British Pound'    },
-  ];
+  const settings   = getSettings();
+  const currencies = [
+    settings.baseCurrency,
+    settings.rates && settings.rates.currency2 ? settings.rates.currency2.code : null,
+    settings.rates && settings.rates.currency3 ? settings.rates.currency3.code : null,
+  ].filter(Boolean);
 
-  /* Build the option HTML string once */
-  var optionsHtml = ALL_CURRENCIES
-    .map(function(c) { return '<option value="' + c.code + '">' + c.label + '</option>'; })
-    .join('');
+  [convertFromEl, convertToEl].forEach(function(select) {
+    const currentVal = select.value;
+    select.innerHTML = currencies
+      .map(function(c) { return '<option value="' + c + '">' + c + '</option>'; })
+      .join('');
+    if (currencies.indexOf(currentVal) !== -1) select.value = currentVal;
+  });
 
-  /* Set both selects — preserve current value if still valid */
-  var fromVal = convertFromEl.value;
-  var toVal   = convertToEl.value;
-
-  convertFromEl.innerHTML = optionsHtml;
-  convertToEl.innerHTML   = optionsHtml;
-
-  /* Restore previous selections or use sensible defaults */
-  convertFromEl.value = fromVal || 'USD';
-  convertToEl.value   = toVal   || 'KES';
-
-  /* If both happen to be the same after restore, fix it */
-  if (convertFromEl.value === convertToEl.value) {
-    convertToEl.value = convertFromEl.value === 'KES' ? 'USD' : 'KES';
-  }
-
-  /* Wire up sync — prevents picking same currency on both sides */
-  syncConverterDropdowns();
-}
-
-/**
- * syncConverterDropdowns
- * Attaches change listeners to the From/To selects so that
- * when one is changed, the other's matching option is disabled.
- * Called once during populateCurrencySelects setup.
- */
-function syncConverterDropdowns() {
-  /* Remove old listeners by replacing elements with clones */
-  var newFrom = convertFromEl.cloneNode(true);
-  var newTo   = convertToEl.cloneNode(true);
-  convertFromEl.parentNode.replaceChild(newFrom, convertFromEl);
-  convertToEl.parentNode.replaceChild(newTo, convertToEl);
-
-  /* Re-grab fresh references after the DOM swap */
-  var fromSelect = document.getElementById('convert-from');
-  var toSelect   = document.getElementById('convert-to');
-
-  /* Helper: disable the matching option in the other select */
-  function updateDisabled() {
-    var fromVal = fromSelect.value;
-    var toVal   = toSelect.value;
-
-    /* Enable all options first */
-    Array.prototype.forEach.call(fromSelect.options, function(opt) { opt.disabled = false; });
-    Array.prototype.forEach.call(toSelect.options,   function(opt) { opt.disabled = false; });
-
-    /* Disable the currently selected value in the opposite select */
-    Array.prototype.forEach.call(toSelect.options, function(opt) {
-      if (opt.value === fromVal) opt.disabled = true;
-    });
-    Array.prototype.forEach.call(fromSelect.options, function(opt) {
-      if (opt.value === toVal) opt.disabled = true;
-    });
-
-    /* If the current selection became disabled, auto-pick the first available */
-    if (fromSelect.value === toSelect.value) {
-      var found = false;
-      Array.prototype.forEach.call(toSelect.options, function(opt) {
-        if (!found && !opt.disabled && opt.value !== fromSelect.value) {
-          toSelect.value = opt.value;
-          found = true;
-        }
-      });
-    }
-  }
-
-  fromSelect.addEventListener('change', updateDisabled);
-  toSelect.addEventListener('change', updateDisabled);
-
-  /* Also wire the Convert button to the fresh selects */
-  btnConvert.onclick = function() {
-    var amount   = parseFloat(convertAmountEl.value);
-    var fromCode = fromSelect.value;
-    var toCode   = toSelect.value;
-
-    if (isNaN(amount) || amount <= 0) {
-      convertResultEl.textContent = 'Enter a valid amount to convert.';
-      return;
-    }
-
-    if (fromCode === toCode) {
-      convertResultEl.textContent = 'Choose two different currencies.';
-      return;
-    }
-
-    var result = convertCurrency(amount, fromCode, toCode);
-
-    if (result === null) {
-      convertResultEl.textContent = 'Rate not available. Set it in Settings first.';
-    } else {
-      convertResultEl.textContent =
-        amount.toFixed(2) + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
-    }
-  };
-
-  /* Run once on init to set disabled states */
-  updateDisabled();
+  if (convertFromEl.options.length > 0) convertFromEl.selectedIndex = 0;
+  if (convertToEl.options.length > 1)   convertToEl.selectedIndex   = 1;
 }
 
 /**
@@ -941,6 +835,26 @@ function syncConverterDropdowns() {
  * Also wires the currency convert button.
  */
 function attachImportExportListeners() {
+  btnConvert.addEventListener('click', function() {
+    const amount   = parseFloat(convertAmountEl.value);
+    const fromCode = convertFromEl.value;
+    const toCode   = convertToEl.value;
+
+    if (isNaN(amount) || amount <= 0) {
+      convertResultEl.textContent = 'Enter a valid amount to convert.';
+      return;
+    }
+
+    const result = convertCurrency(amount, fromCode, toCode);
+
+    if (result === null) {
+      convertResultEl.textContent = 'Conversion rate not available. Check Settings.';
+    } else {
+      convertResultEl.textContent =
+        amount + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
+    }
+  });
+
   btnExport.addEventListener('click', handleExport);
   importFileEl.addEventListener('change', handleImport);
 }
