@@ -18,7 +18,7 @@ Student Finance Tracker
 
 1. Clone the repository:
    ```
-   git clone  https://github.com/j-nyamu/finance-tracker.git
+   git clone  https://github.com/j-nyamu/finance-tracker. git
    ```
 2. Open the project folder in VS Code.
 3. Install the **Live Server** extension if you have not already.
