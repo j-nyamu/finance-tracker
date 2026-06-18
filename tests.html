@@ -22,34 +22,89 @@
 <body>
 
   <h1>Regex Validator Tests</h1>
-  <p>Opens as a standalone page. No server needed — just open in a browser.</p>
+  <p>Self-contained — works by opening directly in a browser. No server required.</p>
 
   <div id="summary"></div>
   <div id="results"></div>
 
-<script type="module">
+<script>
 
   /* ============================================================
-     Import validators from the scripts folder.
-     Path is relative to this file which sits at the project root.
+     VALIDATORS — inlined from scripts/validators.js
+     Copied here so this file works without a server or imports.
      ============================================================ */
-  import {
-    validateDescription,
-    validateAmount,
-    validateDate,
-    validateCategory,
-  } from './scripts/validators.js';
+
+  /* 1. Description */
+  var DESCRIPTION_PATTERN    = /^\S(?:.*\S)?$/;
+  var DUPLICATE_WORD_PATTERN = /\b(\w+)\s+\1\b/i;
+
+  function validateDescription(value) {
+    if (!value || value.trim() === '') {
+      return { valid: false, message: 'Description is required.' };
+    }
+    if (!DESCRIPTION_PATTERN.test(value)) {
+      return { valid: false, message: 'Description must not start or end with a space.' };
+    }
+    var dup = value.match(DUPLICATE_WORD_PATTERN);
+    if (dup) {
+      return { valid: false, message: 'Duplicate word detected: "' + dup[1] + '". Please rephrase.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  /* 2. Amount */
+  var AMOUNT_PATTERN = /^(0|[1-9]\d*)(\.\d{1,2})?$/;
+
+  function validateAmount(value) {
+    if (!value || value.trim() === '') {
+      return { valid: false, message: 'Amount is required.' };
+    }
+    if (!AMOUNT_PATTERN.test(value.trim())) {
+      return { valid: false, message: 'Enter a valid amount (e.g. 12.50). No more than 2 decimal places.' };
+    }
+    if (parseFloat(value) === 0) {
+      return { valid: false, message: 'Amount must be greater than zero.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  /* 3. Date */
+  var DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
+  function validateDate(value) {
+    if (!value || value.trim() === '') {
+      return { valid: false, message: 'Date is required.' };
+    }
+    if (!DATE_PATTERN.test(value)) {
+      return { valid: false, message: 'Enter a valid date in YYYY-MM-DD format (e.g. 2025-09-29).' };
+    }
+    var parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
+      return { valid: false, message: 'That date does not exist on the calendar.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  /* 4. Category */
+  var CATEGORY_PATTERN = /^[A-Za-z]+(?:[ -][A-Za-z]+)*$/;
+
+  function validateCategory(value) {
+    if (!value || value.trim() === '') {
+      return { valid: false, message: 'Please select a category.' };
+    }
+    if (!CATEGORY_PATTERN.test(value)) {
+      return { valid: false, message: 'Category must contain only letters, spaces, or hyphens.' };
+    }
+    return { valid: true, message: '' };
+  }
 
 
   /* ============================================================
      TEST CASES
-     Each case: { input, expectValid, label }
-     expectValid = true means we expect the validator to PASS.
      ============================================================ */
 
-  const tests = {
+  var tests = {
 
-    /* --- Description --- */
     'Description': [
       { input: 'Lunch at cafeteria',    expectValid: true,  label: 'Normal description' },
       { input: 'Coffee',                expectValid: true,  label: 'Single word' },
@@ -62,7 +117,6 @@
       { input: 'Bus fare to town',      expectValid: true,  label: 'Multi-word, no duplicates' },
     ],
 
-    /* --- Amount --- */
     'Amount': [
       { input: '12.50',   expectValid: true,  label: 'Standard amount with 2 decimals' },
       { input: '0.75',    expectValid: true,  label: 'Amount less than 1' },
@@ -78,7 +132,6 @@
       { input: '.50',     expectValid: false, label: 'No digit before decimal' },
     ],
 
-    /* --- Date --- */
     'Date': [
       { input: '2025-09-29',  expectValid: true,  label: 'Valid date' },
       { input: '2025-01-01',  expectValid: true,  label: 'Start of year' },
@@ -93,7 +146,6 @@
       { input: '2025-9-29',   expectValid: false, label: 'Month not zero-padded' },
     ],
 
-    /* --- Category --- */
     'Category': [
       { input: 'Food',          expectValid: true,  label: 'Single word' },
       { input: 'Bus Fare',      expectValid: true,  label: 'Two words with space' },
@@ -113,46 +165,44 @@
      TEST RUNNER
      ============================================================ */
 
-  /* Map each validator name to its function */
-  const validators = {
+  var validators = {
     'Description': validateDescription,
     'Amount':      validateAmount,
     'Date':        validateDate,
     'Category':    validateCategory,
   };
 
-  let totalPass = 0;
-  let totalFail = 0;
-  const resultsEl = document.getElementById('results');
+  var totalPass = 0;
+  var totalFail = 0;
+  var resultsEl = document.getElementById('results');
 
-  /* Run each group of tests */
-  Object.entries(tests).forEach(([groupName, cases]) => {
-    const validatorFn = validators[groupName];
+  Object.entries(tests).forEach(function(entry) {
+    var groupName   = entry[0];
+    var cases       = entry[1];
+    var validatorFn = validators[groupName];
 
-    /* Build a table for this group */
-    let html = '<h2>' + groupName + ' validator</h2>';
+    var html = '<h2>' + groupName + ' validator</h2>';
     html += '<table>';
     html += '<thead><tr><th>Input</th><th>Expected</th><th>Got</th><th>Result</th><th>Label</th></tr></thead>';
     html += '<tbody>';
 
-    cases.forEach((tc) => {
-      const result   = validatorFn(tc.input);
-      const passed   = result.valid === tc.expectValid;
+    cases.forEach(function(tc) {
+      var result  = validatorFn(tc.input);
+      var passed  = result.valid === tc.expectValid;
 
       if (passed) totalPass++;
       else        totalFail++;
 
-      const resultLabel = passed
+      var resultLabel = passed
         ? '<span class="pass">PASS</span>'
         : '<span class="fail">FAIL</span>';
 
-      const expected = tc.expectValid ? 'valid' : 'invalid';
-      const got      = result.valid   ? 'valid' : 'invalid (' + result.message + ')';
+      var expected = tc.expectValid ? 'valid' : 'invalid';
+      var got      = result.valid   ? 'valid' : 'invalid (' + result.message + ')';
 
-      /* Show the raw input — escape angle brackets so it renders as text */
-      const displayInput = tc.input === ''
+      var displayInput = tc.input === ''
         ? '<em>(empty)</em>'
-        : '<code>' + tc.input.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code>';
+        : '<code>' + tc.input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code>';
 
       html += '<tr>';
       html += '<td>' + displayInput + '</td>';
@@ -171,14 +221,13 @@
   /* ============================================================
      SUMMARY BOX
      ============================================================ */
-  const summaryEl = document.getElementById('summary');
-  const total     = totalPass + totalFail;
+  var summaryEl = document.getElementById('summary');
+  var total     = totalPass + totalFail;
 
   summaryEl.className = totalFail === 0 ? 'all-pass' : 'has-fail';
-  summaryEl.innerHTML =
-    (totalFail === 0
-      ? 'All ' + total + ' tests passed.'
-      : totalFail + ' of ' + total + ' tests FAILED. Check the table below.');
+  summaryEl.innerHTML = totalFail === 0
+    ? 'All ' + total + ' tests passed.'
+    : totalFail + ' of ' + total + ' tests FAILED. Check the table below.';
 
 </script>
 </body>
