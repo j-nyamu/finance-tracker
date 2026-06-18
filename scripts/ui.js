@@ -70,29 +70,26 @@ const recordsTbody     = document.getElementById('records-tbody');
 const emptyStateEl     = document.getElementById('empty-state');
 
 /* Form */
-const formHeading          = document.getElementById('form-heading');
-const formStatusEl         = document.getElementById('form-status');
-const transactionForm      = document.getElementById('transaction-form');
-const fieldId              = document.getElementById('field-id');
-const fieldDescription     = document.getElementById('field-description');
-const fieldAmount          = document.getElementById('field-amount');
-const fieldCategory        = document.getElementById('field-category');
-const fieldDate            = document.getElementById('field-date');
-const descError            = document.getElementById('desc-error');
-const amountError          = document.getElementById('amount-error');
-const categoryError        = document.getElementById('category-error');
-const dateError            = document.getElementById('date-error');
-const btnSubmit            = document.getElementById('btn-submit');
-const btnCancel            = document.getElementById('btn-cancel');
+const formHeading      = document.getElementById('form-heading');
+const formStatusEl     = document.getElementById('form-status');
+const transactionForm  = document.getElementById('transaction-form');
+const fieldId          = document.getElementById('field-id');
+const fieldDescription = document.getElementById('field-description');
+const fieldAmount      = document.getElementById('field-amount');
+const fieldCategory    = document.getElementById('field-category');
+const fieldDate        = document.getElementById('field-date');
+const descError        = document.getElementById('desc-error');
+const amountError      = document.getElementById('amount-error');
+const categoryError    = document.getElementById('category-error');
+const dateError        = document.getElementById('date-error');
+const btnSubmit        = document.getElementById('btn-submit');
+const btnCancel        = document.getElementById('btn-cancel');
 
-/* Settings */
+/* Settings — only base currency remains; rate fields were removed
+   along with the currency converter feature */
 const settingBudgetCap    = document.getElementById('setting-budget-cap');
 const btnSaveBudget       = document.getElementById('btn-save-budget');
 const settingBaseCurrency = document.getElementById('setting-base-currency');
-const settingRate1Code    = document.getElementById('setting-rate-1-code');
-const settingRate1Value   = document.getElementById('setting-rate-1-value');
-const settingRate2Code    = document.getElementById('setting-rate-2-code');
-const settingRate2Value   = document.getElementById('setting-rate-2-value');
 const btnSaveRates        = document.getElementById('btn-save-rates');
 const settingsStatusEl    = document.getElementById('settings-status');
 const btnExport           = document.getElementById('btn-export');
@@ -110,9 +107,9 @@ const btnCancelDelete  = document.getElementById('btn-cancel-delete');
    APP STATE - UI layer
    ============================================================ */
 
-let editingId = null;
-let pendingDeleteId = null;
-let activeRegex = null;
+let editingId       = null;
+let pendingDeleteId  = null;
+let activeRegex      = null;
 
 
 /* ============================================================
@@ -120,8 +117,6 @@ let activeRegex = null;
    ============================================================ */
 
 function init() {
-  console.log('[ui] init() starting...');
-  
   /* Hide all sections immediately so none flash visible before init completes */
   allSections.forEach(function(section) { section.hidden = true; });
 
@@ -145,8 +140,6 @@ function init() {
 
   /* Show the about section by default */
   showSection('about');
-  
-  console.log('[ui] init() complete');
 }
 
 
@@ -155,23 +148,22 @@ function init() {
    ============================================================ */
 
 function showSection(sectionName) {
-  allSections.forEach((section) => {
+  allSections.forEach(function(section) {
     section.hidden = true;
   });
 
   const target = document.getElementById('section-' + sectionName);
-  if (!target) {
-    console.warn('[ui] showSection: no section found for "' + sectionName + '"');
-    return;
-  }
+  if (!target) return;
+
   target.hidden = false;
+
   const heading = target.querySelector('h1, h2');
   if (heading) {
     heading.setAttribute('tabindex', '-1');
     heading.focus();
   }
 
-  navLinks.forEach((link) => {
+  navLinks.forEach(function(link) {
     const isActive = link.dataset.section === sectionName;
     link.classList.toggle('is-active', isActive);
     link.setAttribute('aria-current', isActive ? 'page' : 'false');
@@ -182,8 +174,8 @@ function showSection(sectionName) {
 }
 
 function attachNavListeners() {
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
       e.preventDefault();
       const section = link.dataset.section;
       if (section === 'dashboard') renderDashboard();
@@ -192,12 +184,12 @@ function attachNavListeners() {
     });
   });
 
-  navToggleBtn.addEventListener('click', () => {
+  navToggleBtn.addEventListener('click', function() {
     const isOpen = primaryNav.classList.toggle('is-open');
     navToggleBtn.setAttribute('aria-expanded', String(isOpen));
   });
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', function(e) {
     if (
       primaryNav.classList.contains('is-open') &&
       !primaryNav.contains(e.target) &&
@@ -208,11 +200,13 @@ function attachNavListeners() {
     }
   });
 
+  /* Any element with data-goto navigates to that section
+     (used by empty-state "Add transaction" link, etc.) */
   document.addEventListener('click', function(e) {
-    var gotoBtn = e.target.closest('[data-goto]');
+    const gotoBtn = e.target.closest('[data-goto]');
     if (!gotoBtn) return;
     e.preventDefault();
-    var dest = gotoBtn.dataset.goto;
+    const dest = gotoBtn.dataset.goto;
     if (dest === 'dashboard') renderDashboard();
     if (dest === 'records')   renderTable();
     showSection(dest);
@@ -230,7 +224,7 @@ function renderDashboard() {
   const total        = getTotalAmount();
   const budgetStatus = getBudgetStatus();
 
-  if (statTotalCount) statTotalCount.textContent  = transactions.length;
+  if (statTotalCount)  statTotalCount.textContent  = transactions.length;
   if (statTotalAmount) statTotalAmount.textContent = formatCurrency(total, settings.baseCurrency);
   if (statTopCategory) statTopCategory.textContent = getTopCategory();
 
@@ -242,11 +236,9 @@ function renderDashboard() {
         ? 'var(--color-danger)'
         : 'var(--color-success)';
     }
-  } else {
-    if (statBudgetRemaining) {
-      statBudgetRemaining.textContent = 'No cap set';
-      statBudgetRemaining.style.color = '';
-    }
+  } else if (statBudgetRemaining) {
+    statBudgetRemaining.textContent = 'No cap set';
+    statBudgetRemaining.style.color = '';
   }
 
   renderBudgetAlert(budgetStatus, settings);
@@ -255,7 +247,7 @@ function renderDashboard() {
 
 function renderBudgetAlert(budgetStatus, settings) {
   if (!budgetAlertEl) return;
-  
+
   if (!settings.budgetCap || settings.budgetCap <= 0) {
     budgetAlertEl.textContent = '';
     budgetAlertEl.className   = 'budget-alert';
@@ -280,7 +272,7 @@ function renderBudgetAlert(budgetStatus, settings) {
 
 function renderTrendChart() {
   if (!trendChartEl) return;
-  
+
   const days   = getLast7DaysTotals();
   const maxAmt = Math.max.apply(null, days.map(function(d) { return d.amount; }).concat([1]));
 
@@ -342,10 +334,10 @@ function renderTable() {
 }
 
 function buildTableRow(record) {
-  const settings          = getSettings();
-  const highlightedDesc   = highlight(record.description, activeRegex);
-  const highlightedCat    = highlight(record.category, activeRegex);
-  const badgeClass        = 'badge badge-' + record.category.toLowerCase().replace(/\s+/g, '-');
+  const settings        = getSettings();
+  const highlightedDesc = highlight(record.description, activeRegex);
+  const highlightedCat  = highlight(record.category, activeRegex);
+  const badgeClass      = 'badge badge-' + record.category.toLowerCase().replace(/\s+/g, '-');
 
   return '<tr data-id="' + record.id + '" class="row-new">' +
     '<td>' + escapeForAttr(record.date) + '</td>' +
@@ -363,7 +355,7 @@ function buildTableRow(record) {
 
 function attachTableListeners() {
   if (!recordsTbody) return;
-  
+
   recordsTbody.addEventListener('click', function(e) {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -378,7 +370,7 @@ function attachTableListeners() {
 
 function populateCategoryFilter() {
   if (!filterCategoryEl) return;
-  
+
   const categories = ['Food', 'Books', 'Transport', 'Entertainment', 'Fees', 'Other'];
 
   filterCategoryEl.innerHTML = '<option value="all">All categories</option>';
@@ -398,7 +390,7 @@ function populateCategoryFilter() {
 
 function attachSearchListeners() {
   if (!searchInputEl) return;
-  
+
   searchInputEl.addEventListener('input', function() {
     const flags = toggleCaseEl && toggleCaseEl.checked ? 'i' : '';
     const regex = compileRegex(searchInputEl.value, flags);
@@ -419,7 +411,7 @@ function attachSearchListeners() {
     });
   }
 
-  if (sortByEl) sortByEl.addEventListener('change', function() { renderTable(); });
+  if (sortByEl)         sortByEl.addEventListener('change', function() { renderTable(); });
   if (filterCategoryEl) filterCategoryEl.addEventListener('change', function() { renderTable(); });
 }
 
@@ -429,13 +421,8 @@ function attachSearchListeners() {
    ============================================================ */
 
 function attachFormListeners() {
-  console.log('[ui] attachFormListeners() called');
-  
-  if (!transactionForm) {
-    console.error('[ui] ERROR: transactionForm not found!');
-    return;
-  }
-  
+  if (!transactionForm) return;
+
   if (fieldDescription) {
     fieldDescription.addEventListener('input', function() {
       applyValidationUI(fieldDescription, descError, validateDescription(fieldDescription.value));
@@ -460,8 +447,9 @@ function attachFormListeners() {
     });
   }
 
+  /* Single source of truth for form submission — preventDefault here
+     is all that's needed, no inline onsubmit handler required */
   transactionForm.addEventListener('submit', handleFormSubmit);
-  console.log('[ui] Form submit listener attached');
 
   if (btnCancel) {
     btnCancel.addEventListener('click', function() {
@@ -472,7 +460,6 @@ function attachFormListeners() {
 }
 
 function handleFormSubmit(e) {
-  console.log('[ui] handleFormSubmit called');
   e.preventDefault();
 
   const fields = {
@@ -482,22 +469,18 @@ function handleFormSubmit(e) {
     date:        fieldDate ? fieldDate.value : '',
   };
 
-  console.log('[ui] Form fields:', fields);
-
   const results = validateForm(fields);
-  console.log('[ui] Validation results:', results);
 
-  if (descError) applyValidationUI(fieldDescription, descError, results.description);
-  if (amountError) applyValidationUI(fieldAmount, amountError, results.amount);
+  if (descError)     applyValidationUI(fieldDescription, descError, results.description);
+  if (amountError)   applyValidationUI(fieldAmount, amountError, results.amount);
   if (categoryError) applyValidationUI(fieldCategory, categoryError, results.category);
-  if (dateError) applyValidationUI(fieldDate, dateError, results.date);
+  if (dateError)      applyValidationUI(fieldDate, dateError, results.date);
 
   if (!results.allValid) {
-    console.log('[ui] Validation failed, not saving');
     if (!results.description.valid && fieldDescription) fieldDescription.focus();
-    else if (!results.amount.valid && fieldAmount)  fieldAmount.focus();
-    else if (!results.category.valid && fieldCategory) fieldCategory.focus();
-    else if (!results.date.valid && fieldDate)    fieldDate.focus();
+    else if (!results.amount.valid && fieldAmount)       fieldAmount.focus();
+    else if (!results.category.valid && fieldCategory)   fieldCategory.focus();
+    else if (!results.date.valid && fieldDate)            fieldDate.focus();
     return;
   }
 
@@ -507,8 +490,6 @@ function handleFormSubmit(e) {
     category:    fields.category,
     date:        fields.date,
   };
-
-  console.log('[ui] Saving transaction:', parsedFields);
 
   if (editingId) {
     updateTransaction(editingId, parsedFields);
@@ -522,8 +503,6 @@ function handleFormSubmit(e) {
   renderDashboard();
   renderTable();
   showSection('records');
-  
-  console.log('[ui] Transaction saved and redirected to records');
 }
 
 function handleEditClick(id) {
@@ -532,14 +511,14 @@ function handleEditClick(id) {
 
   editingId = id;
 
-  if (fieldId) fieldId.value = record.id;
-  if (fieldDescription) fieldDescription.value = record.description;
-  if (fieldAmount) fieldAmount.value = String(record.amount);
-  if (fieldCategory) fieldCategory.value = record.category;
-  if (fieldDate) fieldDate.value = record.date;
+  if (fieldId)          fieldId.value = record.id;
+  if (fieldDescription)  fieldDescription.value = record.description;
+  if (fieldAmount)        fieldAmount.value = String(record.amount);
+  if (fieldCategory)      fieldCategory.value = record.category;
+  if (fieldDate)          fieldDate.value = record.date;
 
   if (formHeading) formHeading.textContent = 'Edit Transaction';
-  if (btnSubmit) btnSubmit.textContent = 'Update Transaction';
+  if (btnSubmit)    btnSubmit.textContent = 'Update Transaction';
 
   showSection('add');
   if (fieldDescription) fieldDescription.focus();
@@ -551,7 +530,7 @@ function resetForm() {
   if (fieldId) fieldId.value = '';
 
   if (formHeading) formHeading.textContent = 'Add Transaction';
-  if (btnSubmit) btnSubmit.textContent = 'Save Transaction';
+  if (btnSubmit)    btnSubmit.textContent = 'Save Transaction';
 
   [fieldDescription, fieldAmount, fieldCategory, fieldDate].forEach(function(el) {
     if (el) el.classList.remove('is-valid', 'is-invalid');
@@ -564,7 +543,7 @@ function resetForm() {
 
 function showFormStatus(message, type) {
   if (!formStatusEl) return;
-  
+
   formStatusEl.textContent = message;
   formStatusEl.className   = 'form-status is-' + type;
 
@@ -590,7 +569,7 @@ function attachDialogListeners() {
     btnConfirmDelete.addEventListener('click', function() {
       if (pendingDeleteId) {
         deleteTransaction(pendingDeleteId);
-        pendingDeleteId      = null;
+        pendingDeleteId = null;
         if (confirmDialog) confirmDialog.hidden = true;
         renderTable();
         renderDashboard();
@@ -600,14 +579,14 @@ function attachDialogListeners() {
 
   if (btnCancelDelete) {
     btnCancelDelete.addEventListener('click', function() {
-      pendingDeleteId      = null;
+      pendingDeleteId = null;
       if (confirmDialog) confirmDialog.hidden = true;
     });
   }
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && confirmDialog && !confirmDialog.hidden) {
-      pendingDeleteId      = null;
+      pendingDeleteId = null;
       confirmDialog.hidden = true;
     }
   });
@@ -615,7 +594,7 @@ function attachDialogListeners() {
   if (confirmDialog) {
     confirmDialog.addEventListener('click', function(e) {
       if (e.target === confirmDialog) {
-        pendingDeleteId      = null;
+        pendingDeleteId = null;
         confirmDialog.hidden = true;
       }
     });
@@ -630,15 +609,8 @@ function attachDialogListeners() {
 function loadSettingsIntoForm() {
   const settings = getSettings();
 
-  if (settingBudgetCap) settingBudgetCap.value = settings.budgetCap || '';
+  if (settingBudgetCap)    settingBudgetCap.value = settings.budgetCap || '';
   if (settingBaseCurrency) settingBaseCurrency.value = settings.baseCurrency || 'USD';
-
-  if (settings.rates) {
-    if (settingRate1Code) settingRate1Code.value = settings.rates.currency2 ? settings.rates.currency2.code : 'KES';
-    if (settingRate1Value) settingRate1Value.value = settings.rates.currency2 ? settings.rates.currency2.rate : '';
-    if (settingRate2Code) settingRate2Code.value = settings.rates.currency3 ? settings.rates.currency3.code : 'EUR';
-    if (settingRate2Value) settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate : '';
-  }
 }
 
 function attachSettingsListeners() {
@@ -651,22 +623,16 @@ function attachSettingsListeners() {
     });
   }
 
+  /* "Save currency" button — now only saves the base currency,
+     since the multi-rate converter feature was removed */
   if (btnSaveRates) {
     btnSaveRates.addEventListener('click', function() {
       updateSettings({
         baseCurrency: settingBaseCurrency ? settingBaseCurrency.value : 'USD',
-        rates: {
-          currency2: {
-            code: settingRate1Code ? settingRate1Code.value : 'KES',
-            rate: parseFloat(settingRate1Value ? settingRate1Value.value : 0) || 0,
-          },
-          currency3: {
-            code: settingRate2Code ? settingRate2Code.value : 'EUR',
-            rate: parseFloat(settingRate2Value ? settingRate2Value.value : 0) || 0,
-          },
-        },
       });
-      showSettingsStatus('Currency settings saved.');
+      showSettingsStatus('Currency saved.');
+      renderDashboard();
+      renderTable();
     });
   }
 
@@ -687,7 +653,7 @@ function attachSettingsListeners() {
 
 function showSettingsStatus(message) {
   if (!settingsStatusEl) return;
-  
+
   settingsStatusEl.textContent = message;
   settingsStatusEl.className   = 'form-status is-success';
   setTimeout(function() {
@@ -702,7 +668,7 @@ function showSettingsStatus(message) {
    ============================================================ */
 
 function attachImportExportListeners() {
-  if (btnExport) btnExport.addEventListener('click', handleExport);
+  if (btnExport)    btnExport.addEventListener('click', handleExport);
   if (importFileEl) importFileEl.addEventListener('change', handleImport);
 }
 
@@ -712,21 +678,32 @@ function handleExport() {
   if (transactions.length === 0) {
     if (importStatusEl) {
       importStatusEl.textContent = 'Nothing to export - no transactions saved.';
+      importStatusEl.className   = 'form-status is-error';
     }
     return;
   }
 
-  const json  = JSON.stringify(transactions, null, 2);
-  const blob  = new Blob([json], { type: 'application/json' });
-  const url   = URL.createObjectURL(blob);
-  const link  = document.createElement('a');
+  const json = JSON.stringify(transactions, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
 
   link.href     = url;
   link.download = 'finance-tracker-export-' + new Date().toISOString().split('T')[0] + '.json';
+  /* target must be _self, otherwise an inherited <base target="_blank">
+     (or any future change to the page) could send the download to a
+     new tab instead of triggering a file save */
+  link.target = '_self';
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+
+  if (importStatusEl) {
+    importStatusEl.textContent = 'Exported ' + transactions.length + ' transaction(s).';
+    importStatusEl.className   = 'form-status is-success';
+  }
 }
 
 function handleImport(e) {
@@ -745,8 +722,8 @@ function handleImport(e) {
 
   reader.onload = function(event) {
     try {
-      const parsed         = JSON.parse(event.target.result);
-      const validation     = validateImportData(parsed);
+      const parsed     = JSON.parse(event.target.result);
+      const validation = validateImportData(parsed);
 
       if (!validation.valid) {
         if (importStatusEl) {

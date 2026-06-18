@@ -7,7 +7,6 @@
   <meta name="description" content="Student Finance Tracker — track your expenses, set budgets, and search transactions." />
   <title>Student Finance Tracker</title>
   <link rel="stylesheet" href="styles/main.css" />
-<base target="_blank">
 </head>
 
 <body>
@@ -273,7 +272,7 @@
 
         <div id="form-status" class="form-status" role="status" aria-live="polite" aria-atomic="true"></div>
 
-        <form id="transaction-form" class="transaction-form" novalidate onsubmit="return false;">
+        <form id="transaction-form" class="transaction-form" novalidate>
 
           <input type="hidden" id="field-id" />
 
@@ -296,22 +295,21 @@
             <span id="desc-error" class="field-error" role="alert" aria-live="assertive"></span>
           </div>
 
-          <!-- Amount with currency selector -->
+          <!-- Amount -->
           <div class="form-group">
             <label for="field-amount">
               Amount <span class="required" aria-hidden="true">*</span>
             </label>
-                        <input
-                type="text"
-                id="field-amount"
-                class="input-field amount-number-input"
-                placeholder="0.00"
-                required
-                aria-required="true"
-                aria-describedby="amount-error amount-hint"
-                inputmode="decimal"
-              />
-
+            <input
+              type="text"
+              id="field-amount"
+              class="input-field amount-number-input"
+              placeholder="0.00"
+              required
+              aria-required="true"
+              aria-describedby="amount-error amount-hint"
+              inputmode="decimal"
+            />
             <span id="amount-hint" class="field-hint">Positive number, up to 2 decimal places (e.g. 12.50).</span>
             <span id="amount-error" class="field-error" role="alert" aria-live="assertive"></span>
           </div>
@@ -398,8 +396,7 @@
         <fieldset class="settings-group">
           <legend>Currency Settings</legend>
           <p class="settings-description">
-            Set your base currency and manual exchange rates.
-            Rates define how many units of the other currency equal 1 unit of base.
+            Set your base currency. This affects how amounts are displayed across the dashboard.
           </p>
 
           <div class="form-group">
@@ -413,38 +410,7 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="setting-rate-1-code">Second currency</label>
-            <div class="rate-row">
-              <select id="setting-rate-1-code" class="input-field select-field">
-                <option value="KES">KES</option>
-                <option value="RWF">RWF</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="USD">USD</option>
-              </select>
-              <label for="setting-rate-1-value" class="visually-hidden">Exchange rate</label>
-              <input type="number" id="setting-rate-1-value" class="input-field" placeholder="Rate (e.g. 129.50)" min="0" step="0.0001" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="setting-rate-2-code">Third currency</label>
-            <div class="rate-row">
-              <select id="setting-rate-2-code" class="input-field select-field">
-                <option value="EUR">EUR</option>
-                <option value="RWF">RWF</option>
-                <option value="KES">KES</option>
-                <option value="GBP">GBP</option>
-                <option value="USD">USD</option>
-              </select>
-              <label for="setting-rate-2-value" class="visually-hidden">Exchange rate</label>
-              <input type="number" id="setting-rate-2-value" class="input-field" placeholder="Rate (e.g. 0.92)" min="0" step="0.0001" aria-describedby="rate-hint" />
-            </div>
-            <span id="rate-hint" class="field-hint">How many units of the second/third currency equal 1 unit of base.</span>
-          </div>
-
-          <button id="btn-save-rates" class="btn btn-primary">Save rates</button>
+          <button id="btn-save-rates" class="btn btn-primary">Save currency</button>
           <p id="settings-status" role="status" aria-live="polite" class="form-status"></p>
         </fieldset>
 
@@ -456,7 +422,7 @@
 
             <div class="io-group">
               <p class="io-description">Download all your transactions as a JSON file.</p>
-              <button id="btn-export" class="btn btn-outline">Export JSON</button>
+              <button id="btn-export" class="btn btn-outline" type="button">Export JSON</button>
             </div>
 
             <div class="io-group">
@@ -471,7 +437,7 @@
           <div class="danger-zone">
             <h3 class="danger-title">Danger zone</h3>
             <p>This permanently deletes all transactions from this device.</p>
-            <button id="btn-clear-data" class="btn btn-danger">Clear all data</button>
+            <button id="btn-clear-data" class="btn btn-danger" type="button">Clear all data</button>
           </div>
 
         </fieldset>
