@@ -189,8 +189,8 @@
         <!-- Currency converter -->
         <div class="conversion-widget" aria-labelledby="conversion-heading">
           <h3 id="conversion-heading">Currency Converter</h3>
-          <div class="conversion-controls">
 
+          <div class="conversion-controls">
             <div class="form-group conversion-field">
               <label for="convert-amount">Amount</label>
               <input
@@ -200,7 +200,6 @@
                 placeholder="0.00"
                 min="0"
                 step="any"
-                aria-describedby="convert-result"
               />
             </div>
 
@@ -227,11 +226,12 @@
                 <option value="GBP">GBP — British Pound</option>
               </select>
             </div>
-
           </div>
 
-          <div id="convert-result" class="conversion-result" aria-live="polite"></div>
-          <p id="conv-rate-line" class="conv-rate-line"></p>
+          <div class="conversion-output">
+            <label class="conversion-output-label">Result</label>
+            <p id="convert-result" class="conversion-result" aria-live="polite">Enter an amount above to convert.</p>
+          </div>
         </div>
 
       </div>

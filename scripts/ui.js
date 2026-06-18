@@ -812,47 +812,36 @@ function updateCurrencySymbol() {
 
 var FALLBACK_RATES = { USD: 1, KES: 129.50, RWF: 1350.00, EUR: 0.92, GBP: 0.79 };
 
-function populateCurrencySelects() {
-  /* selects are already built in HTML — nothing to do */
-}
+function populateCurrencySelects() { /* selects built in HTML */ }
 
 function runConversion() {
-  var amountEl  = document.getElementById('convert-amount');
-  var fromEl    = document.getElementById('convert-from');
-  var toEl      = document.getElementById('convert-to');
-  var resultEl  = document.getElementById('convert-result');
-  var rateEl    = document.getElementById('conv-rate-line');
+  var amountEl = document.getElementById('convert-amount');
+  var fromEl   = document.getElementById('convert-from');
+  var toEl     = document.getElementById('convert-to');
+  var resultEl = document.getElementById('convert-result');
 
   var amount   = parseFloat(amountEl.value);
   var fromCode = fromEl.value;
   var toCode   = toEl.value;
 
   if (!amount || isNaN(amount) || amount <= 0) {
-    resultEl.textContent = '';
-    rateEl.textContent   = '';
+    resultEl.textContent = 'Enter an amount above to convert.';
     return;
   }
 
   var result = convertCurrency(amount, fromCode, toCode);
-  var rate1  = convertCurrency(1, fromCode, toCode);
 
   if (result === null) {
     resultEl.textContent = 'Rate unavailable — set in Settings.';
-    rateEl.textContent   = '';
   } else {
     resultEl.textContent = amount.toFixed(2) + ' ' + fromCode + ' = ' + result.toFixed(2) + ' ' + toCode;
-    rateEl.textContent   = '1 ' + fromCode + ' = ' + rate1.toFixed(4) + ' ' + toCode;
   }
 }
 
 function attachConverterListeners() {
-  var amountEl = document.getElementById('convert-amount');
-  var fromEl   = document.getElementById('convert-from');
-  var toEl     = document.getElementById('convert-to');
-
-  amountEl.addEventListener('input',  runConversion);
-  fromEl.addEventListener('change',   runConversion);
-  toEl.addEventListener('change',     runConversion);
+  document.getElementById('convert-amount').addEventListener('input',  runConversion);
+  document.getElementById('convert-from').addEventListener('change',   runConversion);
+  document.getElementById('convert-to').addEventListener('change',     runConversion);
 }
 
 /**
