@@ -1,15 +1,6 @@
 /* ============================================================
    ui.js
    The main controller for the Finance Tracker.
-   This file:
-     - Initialises the app on page load
-     - Handles all navigation between sections
-     - Renders the records table
-     - Handles the add/edit form
-     - Renders the stats dashboard and chart
-     - Wires up search, sort, and filter
-     - Handles import/export and settings
-     - Manages the delete confirmation dialog
    ============================================================ */
 
 import {
@@ -50,7 +41,6 @@ import { validateImportData } from './storage.js';
 
 /* ============================================================
    DOM ELEMENT REFERENCES
-   Grabbed once here so we do not query the DOM repeatedly.
    ============================================================ */
 
 /* Navigation */
@@ -118,16 +108,10 @@ const btnCancelDelete  = document.getElementById('btn-cancel-delete');
 
 /* ============================================================
    APP STATE - UI layer
-   These track what the user is currently doing in the UI.
    ============================================================ */
 
-/* The id of the record currently being edited, or null */
 let editingId = null;
-
-/* The id of the record pending deletion (set when dialog opens) */
 let pendingDeleteId = null;
-
-/* Current search regex - null means no active search */
 let activeRegex = null;
 
 
@@ -135,11 +119,6 @@ let activeRegex = null;
    INITIALISATION
    ============================================================ */
 
-/**
- * init
- * Entry point - called once when the DOM is ready.
- * Loads data, renders everything, attaches event listeners.
- */
 function init() {
   /* Hide all sections immediately so none flash visible before init completes */
   allSections.forEach(function(section) { section.hidden = true; });
@@ -151,7 +130,7 @@ function init() {
   renderDashboard();
   renderTable();
   populateCategoryFilter();
-    loadSettingsIntoForm();
+  loadSettingsIntoForm();
 
   /* Attach all event listeners */
   attachNavListeners();
@@ -161,7 +140,7 @@ function init() {
   attachSettingsListeners();
   attachDialogListeners();
   attachImportExportListeners();
-  
+
   /* Show the about section by default */
   showSection('about');
 }
@@ -171,70 +150,49 @@ function init() {
    NAVIGATION
    ============================================================ */
 
-/**
- * showSection
- * Hides all sections and shows only the requested one.
- * Updates the active nav link highlight.
- *
- * @param {string} sectionName - e.g. "about", "dashboard", "records"
- */
 function showSection(sectionName) {
-  /* Hide all sections */
   allSections.forEach((section) => {
     section.hidden = true;
   });
 
-  /* Show the target section */
   const target = document.getElementById('section-' + sectionName);
   if (!target) {
     console.warn('[ui] showSection: no section found for "' + sectionName + '"');
     return;
   }
   target.hidden = false;
-  /* Move focus to the section heading for keyboard users */
   const heading = target.querySelector('h1, h2');
   if (heading) {
     heading.setAttribute('tabindex', '-1');
     heading.focus();
   }
 
-  /* Update active state on nav links */
   navLinks.forEach((link) => {
     const isActive = link.dataset.section === sectionName;
     link.classList.toggle('is-active', isActive);
     link.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
 
-  /* Close mobile nav after navigating */
   primaryNav.classList.remove('is-open');
   navToggleBtn.setAttribute('aria-expanded', 'false');
 }
 
-/**
- * attachNavListeners
- * Handles clicks on nav links and the hamburger toggle.
- */
 function attachNavListeners() {
   navLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const section = link.dataset.section;
-
-      /* Refresh data before showing these sections */
       if (section === 'dashboard') renderDashboard();
       if (section === 'records')   renderTable();
-
       showSection(section);
     });
   });
 
-  /* Hamburger toggle */
   navToggleBtn.addEventListener('click', () => {
     const isOpen = primaryNav.classList.toggle('is-open');
     navToggleBtn.setAttribute('aria-expanded', String(isOpen));
   });
 
-  /* Close nav if user clicks outside of it */
   document.addEventListener('click', (e) => {
     if (
       primaryNav.classList.contains('is-open') &&
@@ -246,7 +204,6 @@ function attachNavListeners() {
     }
   });
 
-  /* data-goto buttons — e.g. "Add a Transaction" on the About page */
   document.addEventListener('click', function(e) {
     var gotoBtn = e.target.closest('[data-goto]');
     if (!gotoBtn) return;
@@ -263,17 +220,12 @@ function attachNavListeners() {
    DASHBOARD
    ============================================================ */
 
-/**
- * renderDashboard
- * Updates all stat cards, the trend chart, and the budget alert.
- */
 function renderDashboard() {
   const transactions = getTransactions();
   const settings     = getSettings();
   const total        = getTotalAmount();
   const budgetStatus = getBudgetStatus();
 
-  /* Stat cards */
   statTotalCount.textContent  = transactions.length;
   statTotalAmount.textContent = formatCurrency(total, settings.baseCurrency);
   statTopCategory.textContent = getTopCategory();
@@ -289,20 +241,10 @@ function renderDashboard() {
     statBudgetRemaining.style.color = '';
   }
 
-  /* Budget ARIA live alert */
   renderBudgetAlert(budgetStatus, settings);
-
-  /* 7-day trend chart */
   renderTrendChart();
+}
 
-  /* Currency selects */
-  }
-
-/**
- * renderBudgetAlert
- * Updates the ARIA live region with budget status.
- * Uses "polite" when under budget, "assertive" when over.
- */
 function renderBudgetAlert(budgetStatus, settings) {
   if (!settings.budgetCap || settings.budgetCap <= 0) {
     budgetAlertEl.textContent = '';
@@ -311,7 +253,6 @@ function renderBudgetAlert(budgetStatus, settings) {
   }
 
   if (budgetStatus.isOver) {
-    /* Assertive so screen readers interrupt immediately */
     budgetAlertEl.setAttribute('aria-live', 'assertive');
     budgetAlertEl.className   = 'budget-alert is-over';
     budgetAlertEl.textContent =
@@ -327,10 +268,6 @@ function renderBudgetAlert(budgetStatus, settings) {
   }
 }
 
-/**
- * renderTrendChart
- * Builds the 7-day bar chart from daily totals.
- */
 function renderTrendChart() {
   const days   = getLast7DaysTotals();
   const maxAmt = Math.max.apply(null, days.map(function(d) { return d.amount; }).concat([1]));
@@ -364,14 +301,9 @@ function renderTrendChart() {
    RECORDS TABLE
    ============================================================ */
 
-/**
- * renderTable
- * Filters, sorts, and renders all matching transactions.
- */
 function renderTable() {
   let transactions = getTransactions();
 
-  /* 1. Category filter */
   const selectedCategory = filterCategoryEl.value;
   if (selectedCategory && selectedCategory !== 'all') {
     transactions = transactions.filter(function(t) {
@@ -379,17 +311,12 @@ function renderTable() {
     });
   }
 
-  /* 2. Regex search */
   transactions = filterTransactions(transactions, activeRegex);
-
-  /* 3. Sort */
   transactions = sortTransactions(transactions, sortByEl.value);
 
-  /* 4. Result count - announced by aria-live */
   recordsCountEl.textContent =
     'Showing ' + transactions.length + ' transaction' + (transactions.length !== 1 ? 's' : '');
 
-  /* 5. Empty state */
   if (transactions.length === 0) {
     recordsTbody.innerHTML = '';
     emptyStateEl.hidden    = false;
@@ -397,18 +324,9 @@ function renderTable() {
   }
 
   emptyStateEl.hidden = true;
-
-  /* 6. Build rows */
   recordsTbody.innerHTML = transactions.map(buildTableRow).join('');
 }
 
-/**
- * buildTableRow
- * Returns the HTML string for one table row.
- *
- * @param {Object} record
- * @returns {string}
- */
 function buildTableRow(record) {
   const settings          = getSettings();
   const highlightedDesc   = highlight(record.description, activeRegex);
@@ -429,10 +347,6 @@ function buildTableRow(record) {
   '</tr>';
 }
 
-/**
- * attachTableListeners
- * Event delegation - one listener for all edit/delete clicks.
- */
 function attachTableListeners() {
   recordsTbody.addEventListener('click', function(e) {
     const btn = e.target.closest('[data-action]');
@@ -446,10 +360,6 @@ function attachTableListeners() {
   });
 }
 
-/**
- * populateCategoryFilter
- * Adds category options to the filter dropdown.
- */
 function populateCategoryFilter() {
   const categories = ['Food', 'Books', 'Transport', 'Entertainment', 'Fees', 'Other'];
 
@@ -468,10 +378,6 @@ function populateCategoryFilter() {
    SEARCH, SORT, FILTER LISTENERS
    ============================================================ */
 
-/**
- * attachSearchListeners
- * Wires up search, case toggle, sort, and category filter.
- */
 function attachSearchListeners() {
   searchInputEl.addEventListener('input', function() {
     const flags = toggleCaseEl.checked ? 'i' : '';
@@ -500,10 +406,6 @@ function attachSearchListeners() {
    ADD / EDIT FORM
    ============================================================ */
 
-/**
- * attachFormListeners
- * Real-time validation and form submit.
- */
 function attachFormListeners() {
   fieldDescription.addEventListener('input', function() {
     applyValidationUI(fieldDescription, descError, validateDescription(fieldDescription.value));
@@ -529,12 +431,6 @@ function attachFormListeners() {
   });
 }
 
-/**
- * handleFormSubmit
- * Validates all fields then adds or updates a record.
- *
- * @param {Event} e
- */
 function handleFormSubmit(e) {
   e.preventDefault();
 
@@ -581,12 +477,6 @@ function handleFormSubmit(e) {
   showSection('records');
 }
 
-/**
- * handleEditClick
- * Populates the form with an existing record for editing.
- *
- * @param {string} id
- */
 function handleEditClick(id) {
   const record = getTransactionById(id);
   if (!record) return;
@@ -606,10 +496,6 @@ function handleEditClick(id) {
   fieldDescription.focus();
 }
 
-/**
- * resetForm
- * Clears the form back to its default empty state.
- */
 function resetForm() {
   editingId = null;
   transactionForm.reset();
@@ -627,13 +513,6 @@ function resetForm() {
   });
 }
 
-/**
- * showFormStatus
- * Shows a success or error message below the form.
- *
- * @param {string} message
- * @param {string} type - 'success' or 'error'
- */
 function showFormStatus(message, type) {
   formStatusEl.textContent = message;
   formStatusEl.className   = 'form-status is-' + type;
@@ -649,22 +528,12 @@ function showFormStatus(message, type) {
    DELETE DIALOG
    ============================================================ */
 
-/**
- * handleDeleteClick
- * Opens the confirm dialog before deleting.
- *
- * @param {string} id
- */
 function handleDeleteClick(id) {
   pendingDeleteId = id;
   confirmDialog.hidden = false;
   btnConfirmDelete.focus();
 }
 
-/**
- * attachDialogListeners
- * Wires confirm and cancel on the delete dialog.
- */
 function attachDialogListeners() {
   btnConfirmDelete.addEventListener('click', function() {
     if (pendingDeleteId) {
@@ -701,10 +570,6 @@ function attachDialogListeners() {
    SETTINGS
    ============================================================ */
 
-/**
- * loadSettingsIntoForm
- * Pre-fills settings form fields from saved settings.
- */
 function loadSettingsIntoForm() {
   const settings = getSettings();
 
@@ -717,13 +582,8 @@ function loadSettingsIntoForm() {
     settingRate2Code.value  = settings.rates.currency3 ? settings.rates.currency3.code  : 'EUR';
     settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate  : '';
   }
-
 }
 
-/**
- * attachSettingsListeners
- * Budget cap, currency rates, and clear data.
- */
 function attachSettingsListeners() {
   btnSaveBudget.addEventListener('click', function() {
     const cap = parseFloat(settingBudgetCap.value) || 0;
@@ -746,10 +606,9 @@ function attachSettingsListeners() {
         },
       },
     });
-          showSettingsStatus('Currency settings saved.');
+    showSettingsStatus('Currency settings saved.');
   });
 
-  
   btnClearData.addEventListener('click', function() {
     const confirmed = window.confirm(
       'This will permanently delete all your transactions. Are you sure?'
@@ -763,12 +622,6 @@ function attachSettingsListeners() {
   });
 }
 
-/**
- * showSettingsStatus
- * Shows a confirmation message in settings.
- *
- * @param {string} message
- */
 function showSettingsStatus(message) {
   settingsStatusEl.textContent = message;
   settingsStatusEl.className   = 'form-status is-success';
@@ -778,10 +631,16 @@ function showSettingsStatus(message) {
   }, 3000);
 }
 
-/**
- * handleExport
- * Serialises transactions to JSON and triggers a file download.
- */
+
+/* ============================================================
+   IMPORT / EXPORT
+   ============================================================ */
+
+function attachImportExportListeners() {
+  btnExport.addEventListener('click', handleExport);
+  importFileEl.addEventListener('change', handleImport);
+}
+
 function handleExport() {
   const transactions = getTransactions();
 
@@ -803,12 +662,6 @@ function handleExport() {
   URL.revokeObjectURL(url);
 }
 
-/**
- * handleImport
- * Reads an uploaded JSON file, validates, then replaces data.
- *
- * @param {Event} e
- */
 function handleImport(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -858,15 +711,6 @@ function handleImport(e) {
    UTILITY FUNCTIONS
    ============================================================ */
 
-/**
- * formatCurrency
- * Formats a number as a currency string.
- * e.g. formatCurrency(12.5, "USD") returns "$12.50"
- *
- * @param {number} amount
- * @param {string} currencyCode
- * @returns {string}
- */
 function formatCurrency(amount, currencyCode) {
   currencyCode = currencyCode || 'USD';
   const symbols = { USD: '$', KES: 'KES ', RWF: 'RWF ', EUR: '€', GBP: '£' };
@@ -874,13 +718,6 @@ function formatCurrency(amount, currencyCode) {
   return symbol + amount.toFixed(2);
 }
 
-/**
- * escapeForAttr
- * Escapes a string for safe use inside an HTML attribute.
- *
- * @param {string} text
- * @returns {string}
- */
 function escapeForAttr(text) {
   return String(text)
     .replace(/&/g, '&amp;')
@@ -893,7 +730,5 @@ function escapeForAttr(text) {
 
 /* ============================================================
    START THE APP
-   DOMContentLoaded ensures HTML is fully parsed before we
-   grab elements and attach listeners.
    ============================================================ */
 document.addEventListener('DOMContentLoaded', init);
