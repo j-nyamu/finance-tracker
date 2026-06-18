@@ -68,10 +68,6 @@ const statTopCategory     = document.getElementById('stat-top-category');
 const statBudgetRemaining = document.getElementById('stat-budget-remaining');
 const budgetAlertEl       = document.getElementById('budget-alert');
 const trendChartEl        = document.getElementById('trend-chart');
-const convertAmountEl     = document.getElementById('convert-amount');
-const convertFromEl       = document.getElementById('convert-from');
-const convertToEl         = document.getElementById('convert-to');
-const convertResultEl     = document.getElementById('convert-result');
 
 /* Records toolbar */
 const searchInputEl    = document.getElementById('search-input');
@@ -722,7 +718,7 @@ function loadSettingsIntoForm() {
     settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate  : '';
   }
 
-  }
+}
 
 /**
  * attachSettingsListeners
@@ -750,11 +746,10 @@ function attachSettingsListeners() {
         },
       },
     });
-            showSettingsStatus('Currency settings saved.');
+          showSettingsStatus('Currency settings saved.');
   });
 
-  settingBaseCurrency.addEventListener('change', updateCurrencySymbol);
-
+  
   btnClearData.addEventListener('click', function() {
     const confirmed = window.confirm(
       'This will permanently delete all your transactions. Are you sure?'
