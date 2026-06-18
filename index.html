@@ -7,6 +7,7 @@
   <meta name="description" content="Student Finance Tracker — track your expenses, set budgets, and search transactions." />
   <title>Student Finance Tracker</title>
   <link rel="stylesheet" href="styles/main.css" />
+<base target="_blank">
 </head>
 
 <body>
@@ -137,6 +138,40 @@
             <p>All your data is saved in your browser's localStorage. No sign-up, no server, no internet required. Export to JSON anytime and import it back on any device.</p>
           </div>
 
+        <!-- Currency Converter -->
+        <div class="conversion-widget" aria-label="Currency converter">
+          <h3 class="chart-title">Currency Converter</h3>
+          <div class="conversion-controls">
+            <div class="conversion-field form-group">
+              <label for="convert-amount">Amount</label>
+              <input type="number" id="convert-amount" class="input-field" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <span class="conversion-arrow" aria-hidden="true">→</span>
+            <div class="conversion-field form-group">
+              <label for="convert-from">From</label>
+              <select id="convert-from" class="input-field select-field">
+                <option value="USD">USD</option>
+                <option value="KES">KES</option>
+                <option value="RWF">RWF</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+            <span class="conversion-arrow" aria-hidden="true">→</span>
+            <div class="conversion-field form-group">
+              <label for="convert-to">To</label>
+              <select id="convert-to" class="input-field select-field">
+                <option value="KES">KES</option>
+                <option value="USD">USD</option>
+                <option value="RWF">RWF</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+            <button id="convert-btn" class="btn btn-primary conversion-btn">Convert</button>
+          </div>
+          <p id="convert-result" class="conversion-result">Enter an amount above to convert.</p>
+        </div>
         </div>
 
       </div>
@@ -315,6 +350,7 @@
                 <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>
               </select>
+              <span id="amount-currency-symbol" class="amount-currency-symbol" aria-hidden="true">$</span>
               <input
                 type="text"
                 id="field-amount"

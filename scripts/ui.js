@@ -798,7 +798,9 @@ function updateCurrencySymbol() {
   const symbols  = { USD: '$', KES: 'KES', RWF: 'RWF', EUR: '€', GBP: '£' };
   const settings = getSettings();
   const code     = (settingBaseCurrency && settingBaseCurrency.value) || settings.baseCurrency || 'USD';
-  amountCurrencySymbol.textContent = symbols[code] || code;
+  if (amountCurrencySymbol) {
+    amountCurrencySymbol.textContent = symbols[code] || code;
+  }
 }
 
 
@@ -812,13 +814,40 @@ function updateCurrencySymbol() {
 
 var FALLBACK_RATES = { USD: 1, KES: 129.50, RWF: 1350.00, EUR: 0.92, GBP: 0.79 };
 
-function populateCurrencySelects() { /* selects built in HTML */ }
+function populateCurrencySelects() {
+  var settings = getSettings();
+  var base = settings.baseCurrency || 'USD';
+  var currencies = ['USD', 'KES', 'RWF', 'EUR', 'GBP'];
+
+  var fromEl = document.getElementById('convert-from');
+  var toEl = document.getElementById('convert-to');
+  if (!fromEl || !toEl) return;
+
+  fromEl.innerHTML = '';
+  toEl.innerHTML = '';
+
+  currencies.forEach(function(code) {
+    var opt1 = document.createElement('option');
+    opt1.value = code;
+    opt1.textContent = code;
+    if (code === base) opt1.selected = true;
+    fromEl.appendChild(opt1);
+
+    var opt2 = document.createElement('option');
+    opt2.value = code;
+    opt2.textContent = code;
+    if (code !== base) opt2.selected = true;
+    toEl.appendChild(opt2);
+  });
+}
 
 function runConversion() {
   var amountEl = document.getElementById('convert-amount');
   var fromEl   = document.getElementById('convert-from');
   var toEl     = document.getElementById('convert-to');
   var resultEl = document.getElementById('convert-result');
+
+  if (!amountEl || !fromEl || !toEl || !resultEl) return;
 
   var amount   = parseFloat(amountEl.value);
   var fromCode = fromEl.value;
@@ -839,9 +868,15 @@ function runConversion() {
 }
 
 function attachConverterListeners() {
-  document.getElementById('convert-amount').addEventListener('input',  runConversion);
-  document.getElementById('convert-from').addEventListener('change',   runConversion);
-  document.getElementById('convert-to').addEventListener('change',     runConversion);
+  var amountEl = document.getElementById('convert-amount');
+  var fromEl   = document.getElementById('convert-from');
+  var toEl     = document.getElementById('convert-to');
+  var btnEl    = document.getElementById('convert-btn');
+
+  if (amountEl) amountEl.addEventListener('input',  runConversion);
+  if (fromEl)   fromEl.addEventListener('change',   runConversion);
+  if (toEl)     toEl.addEventListener('change',     runConversion);
+  if (btnEl)    btnEl.addEventListener('click',      runConversion);
 }
 
 /**

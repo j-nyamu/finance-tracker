@@ -56,6 +56,27 @@ export function initState() {
   /* Load settings from localStorage */
   _settings = loadSettings();
 
+  /* Seed data for first-time visitors */
+  if (_transactions.length === 0) {
+    var seedData = [
+      { "id": "txn_0001", "description": "Lunch at cafeteria", "amount": 12.50, "category": "Food", "date": "2025-09-25", "createdAt": "2025-09-25T08:30:00.000Z", "updatedAt": "2025-09-25T08:30:00.000Z" },
+      { "id": "txn_0002", "description": "Chemistry textbook", "amount": 89.99, "category": "Books", "date": "2025-09-23", "createdAt": "2025-09-23T09:15:00.000Z", "updatedAt": "2025-09-23T09:15:00.000Z" },
+      { "id": "txn_0003", "description": "Monthly bus pass", "amount": 45.00, "category": "Transport", "date": "2025-09-01", "createdAt": "2025-09-01T07:00:00.000Z", "updatedAt": "2025-09-01T07:00:00.000Z" },
+      { "id": "txn_0004", "description": "Coffee with friends", "amount": 8.75, "category": "Entertainment", "date": "2025-09-28", "createdAt": "2025-09-28T14:00:00.000Z", "updatedAt": "2025-09-28T14:00:00.000Z" },
+      { "id": "txn_0005", "description": "Semester tuition fees", "amount": 1500.00, "category": "Fees", "date": "2025-09-02", "createdAt": "2025-09-02T10:00:00.000Z", "updatedAt": "2025-09-02T10:00:00.000Z" },
+      { "id": "txn_0006", "description": "Groceries for the week", "amount": 34.20, "category": "Food", "date": "2025-09-27", "createdAt": "2025-09-27T16:45:00.000Z", "updatedAt": "2025-09-27T16:45:00.000Z" },
+      { "id": "txn_0007", "description": "Notebook and pens", "amount": 6.50, "category": "Books", "date": "2025-09-10", "createdAt": "2025-09-10T11:20:00.000Z", "updatedAt": "2025-09-10T11:20:00.000Z" },
+      { "id": "txn_0008", "description": "Matatu fare to town", "amount": 0.75, "category": "Transport", "date": "2025-09-29", "createdAt": "2025-09-29T07:30:00.000Z", "updatedAt": "2025-09-29T07:30:00.000Z" },
+      { "id": "txn_0009", "description": "Movie night ticket", "amount": 15.00, "category": "Entertainment", "date": "2025-09-26", "createdAt": "2025-09-26T19:00:00.000Z", "updatedAt": "2025-09-26T19:00:00.000Z" },
+      { "id": "txn_0010", "description": "Library late fee", "amount": 2.00, "category": "Fees", "date": "2025-09-18", "createdAt": "2025-09-18T13:00:00.000Z", "updatedAt": "2025-09-18T13:00:00.000Z" },
+      { "id": "txn_0011", "description": "Printing assignment pages", "amount": 3.50, "category": "Other", "date": "2025-09-24", "createdAt": "2025-09-24T12:10:00.000Z", "updatedAt": "2025-09-24T12:10:00.000Z" },
+      { "id": "txn_0012", "description": "Tea and mandazi", "amount": 1.25, "category": "Food", "date": "2025-09-29", "createdAt": "2025-09-29T06:45:00.000Z", "updatedAt": "2025-09-29T06:45:00.000Z" }
+    ];
+    _transactions = seedData;
+    _idCounter = 12;
+    saveTransactions(_transactions);
+  }
+
   /* Set the ID counter to one above the highest existing ID
      so new records never clash with imported ones.
      IDs look like "txn_0001" — we parse the number out. */
