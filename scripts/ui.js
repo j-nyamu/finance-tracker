@@ -120,6 +120,8 @@ let activeRegex = null;
    ============================================================ */
 
 function init() {
+  console.log('[ui] init() starting...');
+  
   /* Hide all sections immediately so none flash visible before init completes */
   allSections.forEach(function(section) { section.hidden = true; });
 
@@ -143,6 +145,8 @@ function init() {
 
   /* Show the about section by default */
   showSection('about');
+  
+  console.log('[ui] init() complete');
 }
 
 
@@ -226,19 +230,23 @@ function renderDashboard() {
   const total        = getTotalAmount();
   const budgetStatus = getBudgetStatus();
 
-  statTotalCount.textContent  = transactions.length;
-  statTotalAmount.textContent = formatCurrency(total, settings.baseCurrency);
-  statTopCategory.textContent = getTopCategory();
+  if (statTotalCount) statTotalCount.textContent  = transactions.length;
+  if (statTotalAmount) statTotalAmount.textContent = formatCurrency(total, settings.baseCurrency);
+  if (statTopCategory) statTopCategory.textContent = getTopCategory();
 
   if (settings.budgetCap > 0) {
     const remaining = budgetStatus.remaining;
-    statBudgetRemaining.textContent = formatCurrency(Math.abs(remaining), settings.baseCurrency);
-    statBudgetRemaining.style.color = budgetStatus.isOver
-      ? 'var(--color-danger)'
-      : 'var(--color-success)';
+    if (statBudgetRemaining) {
+      statBudgetRemaining.textContent = formatCurrency(Math.abs(remaining), settings.baseCurrency);
+      statBudgetRemaining.style.color = budgetStatus.isOver
+        ? 'var(--color-danger)'
+        : 'var(--color-success)';
+    }
   } else {
-    statBudgetRemaining.textContent = 'No cap set';
-    statBudgetRemaining.style.color = '';
+    if (statBudgetRemaining) {
+      statBudgetRemaining.textContent = 'No cap set';
+      statBudgetRemaining.style.color = '';
+    }
   }
 
   renderBudgetAlert(budgetStatus, settings);
@@ -246,6 +254,8 @@ function renderDashboard() {
 }
 
 function renderBudgetAlert(budgetStatus, settings) {
+  if (!budgetAlertEl) return;
+  
   if (!settings.budgetCap || settings.budgetCap <= 0) {
     budgetAlertEl.textContent = '';
     budgetAlertEl.className   = 'budget-alert';
@@ -269,6 +279,8 @@ function renderBudgetAlert(budgetStatus, settings) {
 }
 
 function renderTrendChart() {
+  if (!trendChartEl) return;
+  
   const days   = getLast7DaysTotals();
   const maxAmt = Math.max.apply(null, days.map(function(d) { return d.amount; }).concat([1]));
 
@@ -304,7 +316,7 @@ function renderTrendChart() {
 function renderTable() {
   let transactions = getTransactions();
 
-  const selectedCategory = filterCategoryEl.value;
+  const selectedCategory = filterCategoryEl ? filterCategoryEl.value : 'all';
   if (selectedCategory && selectedCategory !== 'all') {
     transactions = transactions.filter(function(t) {
       return t.category === selectedCategory;
@@ -312,19 +324,21 @@ function renderTable() {
   }
 
   transactions = filterTransactions(transactions, activeRegex);
-  transactions = sortTransactions(transactions, sortByEl.value);
+  transactions = sortTransactions(transactions, sortByEl ? sortByEl.value : 'date-desc');
 
-  recordsCountEl.textContent =
-    'Showing ' + transactions.length + ' transaction' + (transactions.length !== 1 ? 's' : '');
+  if (recordsCountEl) {
+    recordsCountEl.textContent =
+      'Showing ' + transactions.length + ' transaction' + (transactions.length !== 1 ? 's' : '');
+  }
 
   if (transactions.length === 0) {
-    recordsTbody.innerHTML = '';
-    emptyStateEl.hidden    = false;
+    if (recordsTbody) recordsTbody.innerHTML = '';
+    if (emptyStateEl) emptyStateEl.hidden = false;
     return;
   }
 
-  emptyStateEl.hidden = true;
-  recordsTbody.innerHTML = transactions.map(buildTableRow).join('');
+  if (emptyStateEl) emptyStateEl.hidden = true;
+  if (recordsTbody) recordsTbody.innerHTML = transactions.map(buildTableRow).join('');
 }
 
 function buildTableRow(record) {
@@ -348,6 +362,8 @@ function buildTableRow(record) {
 }
 
 function attachTableListeners() {
+  if (!recordsTbody) return;
+  
   recordsTbody.addEventListener('click', function(e) {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -361,6 +377,8 @@ function attachTableListeners() {
 }
 
 function populateCategoryFilter() {
+  if (!filterCategoryEl) return;
+  
   const categories = ['Food', 'Books', 'Transport', 'Entertainment', 'Fees', 'Other'];
 
   filterCategoryEl.innerHTML = '<option value="all">All categories</option>';
@@ -379,26 +397,30 @@ function populateCategoryFilter() {
    ============================================================ */
 
 function attachSearchListeners() {
+  if (!searchInputEl) return;
+  
   searchInputEl.addEventListener('input', function() {
-    const flags = toggleCaseEl.checked ? 'i' : '';
+    const flags = toggleCaseEl && toggleCaseEl.checked ? 'i' : '';
     const regex = compileRegex(searchInputEl.value, flags);
 
     if (searchInputEl.value && regex === null) {
-      searchErrorEl.textContent = 'Invalid regex pattern. Check your syntax.';
+      if (searchErrorEl) searchErrorEl.textContent = 'Invalid regex pattern. Check your syntax.';
       return;
     }
 
-    searchErrorEl.textContent = '';
+    if (searchErrorEl) searchErrorEl.textContent = '';
     activeRegex = regex;
     renderTable();
   });
 
-  toggleCaseEl.addEventListener('change', function() {
-    searchInputEl.dispatchEvent(new Event('input'));
-  });
+  if (toggleCaseEl) {
+    toggleCaseEl.addEventListener('change', function() {
+      searchInputEl.dispatchEvent(new Event('input'));
+    });
+  }
 
-  sortByEl.addEventListener('change', function() { renderTable(); });
-  filterCategoryEl.addEventListener('change', function() { renderTable(); });
+  if (sortByEl) sortByEl.addEventListener('change', function() { renderTable(); });
+  if (filterCategoryEl) filterCategoryEl.addEventListener('change', function() { renderTable(); });
 }
 
 
@@ -407,52 +429,75 @@ function attachSearchListeners() {
    ============================================================ */
 
 function attachFormListeners() {
-  fieldDescription.addEventListener('input', function() {
-    applyValidationUI(fieldDescription, descError, validateDescription(fieldDescription.value));
-  });
+  console.log('[ui] attachFormListeners() called');
+  
+  if (!transactionForm) {
+    console.error('[ui] ERROR: transactionForm not found!');
+    return;
+  }
+  
+  if (fieldDescription) {
+    fieldDescription.addEventListener('input', function() {
+      applyValidationUI(fieldDescription, descError, validateDescription(fieldDescription.value));
+    });
+  }
 
-  fieldAmount.addEventListener('input', function() {
-    applyValidationUI(fieldAmount, amountError, validateAmount(fieldAmount.value));
-  });
+  if (fieldAmount) {
+    fieldAmount.addEventListener('input', function() {
+      applyValidationUI(fieldAmount, amountError, validateAmount(fieldAmount.value));
+    });
+  }
 
-  fieldDate.addEventListener('change', function() {
-    applyValidationUI(fieldDate, dateError, validateDate(fieldDate.value));
-  });
+  if (fieldDate) {
+    fieldDate.addEventListener('change', function() {
+      applyValidationUI(fieldDate, dateError, validateDate(fieldDate.value));
+    });
+  }
 
-  fieldCategory.addEventListener('change', function() {
-    applyValidationUI(fieldCategory, categoryError, validateCategory(fieldCategory.value));
-  });
+  if (fieldCategory) {
+    fieldCategory.addEventListener('change', function() {
+      applyValidationUI(fieldCategory, categoryError, validateCategory(fieldCategory.value));
+    });
+  }
 
   transactionForm.addEventListener('submit', handleFormSubmit);
+  console.log('[ui] Form submit listener attached');
 
-  btnCancel.addEventListener('click', function() {
-    resetForm();
-    showSection('records');
-  });
+  if (btnCancel) {
+    btnCancel.addEventListener('click', function() {
+      resetForm();
+      showSection('records');
+    });
+  }
 }
 
 function handleFormSubmit(e) {
+  console.log('[ui] handleFormSubmit called');
   e.preventDefault();
 
   const fields = {
-    description: fieldDescription.value,
-    amount:      fieldAmount.value,
-    category:    fieldCategory.value,
-    date:        fieldDate.value,
+    description: fieldDescription ? fieldDescription.value : '',
+    amount:      fieldAmount ? fieldAmount.value : '',
+    category:    fieldCategory ? fieldCategory.value : '',
+    date:        fieldDate ? fieldDate.value : '',
   };
 
-  const results = validateForm(fields);
+  console.log('[ui] Form fields:', fields);
 
-  applyValidationUI(fieldDescription, descError,    results.description);
-  applyValidationUI(fieldAmount,      amountError,   results.amount);
-  applyValidationUI(fieldCategory,    categoryError, results.category);
-  applyValidationUI(fieldDate,        dateError,     results.date);
+  const results = validateForm(fields);
+  console.log('[ui] Validation results:', results);
+
+  if (descError) applyValidationUI(fieldDescription, descError, results.description);
+  if (amountError) applyValidationUI(fieldAmount, amountError, results.amount);
+  if (categoryError) applyValidationUI(fieldCategory, categoryError, results.category);
+  if (dateError) applyValidationUI(fieldDate, dateError, results.date);
 
   if (!results.allValid) {
-    if (!results.description.valid) fieldDescription.focus();
-    else if (!results.amount.valid)  fieldAmount.focus();
-    else if (!results.category.valid) fieldCategory.focus();
-    else if (!results.date.valid)    fieldDate.focus();
+    console.log('[ui] Validation failed, not saving');
+    if (!results.description.valid && fieldDescription) fieldDescription.focus();
+    else if (!results.amount.valid && fieldAmount)  fieldAmount.focus();
+    else if (!results.category.valid && fieldCategory) fieldCategory.focus();
+    else if (!results.date.valid && fieldDate)    fieldDate.focus();
     return;
   }
 
@@ -462,6 +507,8 @@ function handleFormSubmit(e) {
     category:    fields.category,
     date:        fields.date,
   };
+
+  console.log('[ui] Saving transaction:', parsedFields);
 
   if (editingId) {
     updateTransaction(editingId, parsedFields);
@@ -475,6 +522,8 @@ function handleFormSubmit(e) {
   renderDashboard();
   renderTable();
   showSection('records');
+  
+  console.log('[ui] Transaction saved and redirected to records');
 }
 
 function handleEditClick(id) {
@@ -483,37 +532,39 @@ function handleEditClick(id) {
 
   editingId = id;
 
-  fieldId.value          = record.id;
-  fieldDescription.value = record.description;
-  fieldAmount.value      = String(record.amount);
-  fieldCategory.value    = record.category;
-  fieldDate.value        = record.date;
+  if (fieldId) fieldId.value = record.id;
+  if (fieldDescription) fieldDescription.value = record.description;
+  if (fieldAmount) fieldAmount.value = String(record.amount);
+  if (fieldCategory) fieldCategory.value = record.category;
+  if (fieldDate) fieldDate.value = record.date;
 
-  formHeading.textContent = 'Edit Transaction';
-  btnSubmit.textContent   = 'Update Transaction';
+  if (formHeading) formHeading.textContent = 'Edit Transaction';
+  if (btnSubmit) btnSubmit.textContent = 'Update Transaction';
 
   showSection('add');
-  fieldDescription.focus();
+  if (fieldDescription) fieldDescription.focus();
 }
 
 function resetForm() {
   editingId = null;
-  transactionForm.reset();
-  fieldId.value = '';
+  if (transactionForm) transactionForm.reset();
+  if (fieldId) fieldId.value = '';
 
-  formHeading.textContent = 'Add Transaction';
-  btnSubmit.textContent   = 'Save Transaction';
+  if (formHeading) formHeading.textContent = 'Add Transaction';
+  if (btnSubmit) btnSubmit.textContent = 'Save Transaction';
 
   [fieldDescription, fieldAmount, fieldCategory, fieldDate].forEach(function(el) {
-    el.classList.remove('is-valid', 'is-invalid');
+    if (el) el.classList.remove('is-valid', 'is-invalid');
   });
 
   [descError, amountError, categoryError, dateError].forEach(function(el) {
-    el.textContent = '';
+    if (el) el.textContent = '';
   });
 }
 
 function showFormStatus(message, type) {
+  if (!formStatusEl) return;
+  
   formStatusEl.textContent = message;
   formStatusEl.className   = 'form-status is-' + type;
 
@@ -530,39 +581,45 @@ function showFormStatus(message, type) {
 
 function handleDeleteClick(id) {
   pendingDeleteId = id;
-  confirmDialog.hidden = false;
-  btnConfirmDelete.focus();
+  if (confirmDialog) confirmDialog.hidden = false;
+  if (btnConfirmDelete) btnConfirmDelete.focus();
 }
 
 function attachDialogListeners() {
-  btnConfirmDelete.addEventListener('click', function() {
-    if (pendingDeleteId) {
-      deleteTransaction(pendingDeleteId);
-      pendingDeleteId      = null;
-      confirmDialog.hidden = true;
-      renderTable();
-      renderDashboard();
-    }
-  });
+  if (btnConfirmDelete) {
+    btnConfirmDelete.addEventListener('click', function() {
+      if (pendingDeleteId) {
+        deleteTransaction(pendingDeleteId);
+        pendingDeleteId      = null;
+        if (confirmDialog) confirmDialog.hidden = true;
+        renderTable();
+        renderDashboard();
+      }
+    });
+  }
 
-  btnCancelDelete.addEventListener('click', function() {
-    pendingDeleteId      = null;
-    confirmDialog.hidden = true;
-  });
+  if (btnCancelDelete) {
+    btnCancelDelete.addEventListener('click', function() {
+      pendingDeleteId      = null;
+      if (confirmDialog) confirmDialog.hidden = true;
+    });
+  }
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !confirmDialog.hidden) {
+    if (e.key === 'Escape' && confirmDialog && !confirmDialog.hidden) {
       pendingDeleteId      = null;
       confirmDialog.hidden = true;
     }
   });
 
-  confirmDialog.addEventListener('click', function(e) {
-    if (e.target === confirmDialog) {
-      pendingDeleteId      = null;
-      confirmDialog.hidden = true;
-    }
-  });
+  if (confirmDialog) {
+    confirmDialog.addEventListener('click', function(e) {
+      if (e.target === confirmDialog) {
+        pendingDeleteId      = null;
+        confirmDialog.hidden = true;
+      }
+    });
+  }
 }
 
 
@@ -573,56 +630,64 @@ function attachDialogListeners() {
 function loadSettingsIntoForm() {
   const settings = getSettings();
 
-  settingBudgetCap.value    = settings.budgetCap || '';
-  settingBaseCurrency.value = settings.baseCurrency || 'USD';
+  if (settingBudgetCap) settingBudgetCap.value = settings.budgetCap || '';
+  if (settingBaseCurrency) settingBaseCurrency.value = settings.baseCurrency || 'USD';
 
   if (settings.rates) {
-    settingRate1Code.value  = settings.rates.currency2 ? settings.rates.currency2.code  : 'KES';
-    settingRate1Value.value = settings.rates.currency2 ? settings.rates.currency2.rate  : '';
-    settingRate2Code.value  = settings.rates.currency3 ? settings.rates.currency3.code  : 'EUR';
-    settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate  : '';
+    if (settingRate1Code) settingRate1Code.value = settings.rates.currency2 ? settings.rates.currency2.code : 'KES';
+    if (settingRate1Value) settingRate1Value.value = settings.rates.currency2 ? settings.rates.currency2.rate : '';
+    if (settingRate2Code) settingRate2Code.value = settings.rates.currency3 ? settings.rates.currency3.code : 'EUR';
+    if (settingRate2Value) settingRate2Value.value = settings.rates.currency3 ? settings.rates.currency3.rate : '';
   }
 }
 
 function attachSettingsListeners() {
-  btnSaveBudget.addEventListener('click', function() {
-    const cap = parseFloat(settingBudgetCap.value) || 0;
-    updateSettings({ budgetCap: cap });
-    showSettingsStatus('Budget cap saved.');
-    renderDashboard();
-  });
-
-  btnSaveRates.addEventListener('click', function() {
-    updateSettings({
-      baseCurrency: settingBaseCurrency.value,
-      rates: {
-        currency2: {
-          code: settingRate1Code.value,
-          rate: parseFloat(settingRate1Value.value) || 0,
-        },
-        currency3: {
-          code: settingRate2Code.value,
-          rate: parseFloat(settingRate2Value.value) || 0,
-        },
-      },
-    });
-    showSettingsStatus('Currency settings saved.');
-  });
-
-  btnClearData.addEventListener('click', function() {
-    const confirmed = window.confirm(
-      'This will permanently delete all your transactions. Are you sure?'
-    );
-    if (confirmed) {
-      clearAllTransactions();
-      renderTable();
+  if (btnSaveBudget) {
+    btnSaveBudget.addEventListener('click', function() {
+      const cap = parseFloat(settingBudgetCap ? settingBudgetCap.value : 0) || 0;
+      updateSettings({ budgetCap: cap });
+      showSettingsStatus('Budget cap saved.');
       renderDashboard();
-      showSettingsStatus('All data cleared.');
-    }
-  });
+    });
+  }
+
+  if (btnSaveRates) {
+    btnSaveRates.addEventListener('click', function() {
+      updateSettings({
+        baseCurrency: settingBaseCurrency ? settingBaseCurrency.value : 'USD',
+        rates: {
+          currency2: {
+            code: settingRate1Code ? settingRate1Code.value : 'KES',
+            rate: parseFloat(settingRate1Value ? settingRate1Value.value : 0) || 0,
+          },
+          currency3: {
+            code: settingRate2Code ? settingRate2Code.value : 'EUR',
+            rate: parseFloat(settingRate2Value ? settingRate2Value.value : 0) || 0,
+          },
+        },
+      });
+      showSettingsStatus('Currency settings saved.');
+    });
+  }
+
+  if (btnClearData) {
+    btnClearData.addEventListener('click', function() {
+      const confirmed = window.confirm(
+        'This will permanently delete all your transactions. Are you sure?'
+      );
+      if (confirmed) {
+        clearAllTransactions();
+        renderTable();
+        renderDashboard();
+        showSettingsStatus('All data cleared.');
+      }
+    });
+  }
 }
 
 function showSettingsStatus(message) {
+  if (!settingsStatusEl) return;
+  
   settingsStatusEl.textContent = message;
   settingsStatusEl.className   = 'form-status is-success';
   setTimeout(function() {
@@ -637,15 +702,17 @@ function showSettingsStatus(message) {
    ============================================================ */
 
 function attachImportExportListeners() {
-  btnExport.addEventListener('click', handleExport);
-  importFileEl.addEventListener('change', handleImport);
+  if (btnExport) btnExport.addEventListener('click', handleExport);
+  if (importFileEl) importFileEl.addEventListener('change', handleImport);
 }
 
 function handleExport() {
   const transactions = getTransactions();
 
   if (transactions.length === 0) {
-    importStatusEl.textContent = 'Nothing to export - no transactions saved.';
+    if (importStatusEl) {
+      importStatusEl.textContent = 'Nothing to export - no transactions saved.';
+    }
     return;
   }
 
@@ -667,8 +734,10 @@ function handleImport(e) {
   if (!file) return;
 
   if (!file.name.endsWith('.json')) {
-    importStatusEl.textContent = 'Please choose a .json file.';
-    importStatusEl.className   = 'form-status is-error';
+    if (importStatusEl) {
+      importStatusEl.textContent = 'Please choose a .json file.';
+      importStatusEl.className   = 'form-status is-error';
+    }
     return;
   }
 
@@ -680,10 +749,12 @@ function handleImport(e) {
       const validation     = validateImportData(parsed);
 
       if (!validation.valid) {
-        importStatusEl.textContent =
-          'Import failed: ' + validation.errors[0] +
-          (validation.errors.length > 1 ? ' (and ' + (validation.errors.length - 1) + ' more errors)' : '');
-        importStatusEl.className = 'form-status is-error';
+        if (importStatusEl) {
+          importStatusEl.textContent =
+            'Import failed: ' + validation.errors[0] +
+            (validation.errors.length > 1 ? ' (and ' + (validation.errors.length - 1) + ' more errors)' : '');
+          importStatusEl.className = 'form-status is-error';
+        }
         return;
       }
 
@@ -691,16 +762,20 @@ function handleImport(e) {
       renderTable();
       renderDashboard();
 
-      importStatusEl.textContent =
-        'Imported ' + parsed.length + ' transaction' + (parsed.length !== 1 ? 's' : '') + ' successfully.';
-      importStatusEl.className = 'form-status is-success';
+      if (importStatusEl) {
+        importStatusEl.textContent =
+          'Imported ' + parsed.length + ' transaction' + (parsed.length !== 1 ? 's' : '') + ' successfully.';
+        importStatusEl.className = 'form-status is-success';
+      }
 
     } catch (parseError) {
-      importStatusEl.textContent = 'Import failed: file is not valid JSON.';
-      importStatusEl.className   = 'form-status is-error';
+      if (importStatusEl) {
+        importStatusEl.textContent = 'Import failed: file is not valid JSON.';
+        importStatusEl.className   = 'form-status is-error';
+      }
     }
 
-    importFileEl.value = '';
+    if (importFileEl) importFileEl.value = '';
   };
 
   reader.readAsText(file);
