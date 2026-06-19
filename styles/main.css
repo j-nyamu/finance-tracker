@@ -177,51 +177,97 @@ input, select, button, textarea {
 
 
 /* ============================================================
-   5. HEADER AND NAVIGATION
+   5. HEADER AND NAVIGATION — neon cyan / black signature look
    ============================================================ */
+
+/* Neon palette, scoped to the header only */
+:root {
+  --neon-cyan:       #00f0e0;
+  --neon-cyan-dim:   #0fa89c;
+  --neon-black:      #000000;
+}
+
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  /* Dark blue-black header */
-  background-color: var(--color-near-black);
-  border-bottom: 2px solid var(--color-primary);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  /* Pure black header, distinct from the rest of the light app */
+  background-color: var(--neon-black);
+  border-bottom: 1px solid var(--neon-cyan-dim);
+  box-shadow: 0 0 16px rgba(0, 240, 224, 0.25);
+  overflow: hidden;
 }
 
 .header-inner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-block: var(--space-3);
+  padding-block: var(--space-4);
   gap: var(--space-4);
 }
 
-/* Brand — bold white text, no emoji */
+/* Geometric corner accents — thin diagonal-cut lines framing each side,
+   echoing a circuit-board / blueprint corner bracket */
+.header-inner::before,
+.header-inner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 64px;
+  height: 1px;
+  background: var(--neon-cyan-dim);
+  opacity: 0.6;
+}
+
+.header-inner::before {
+  left: -16px;
+  transform: translateY(-50%) rotate(-8deg);
+}
+
+.header-inner::after {
+  right: -16px;
+  transform: translateY(-50%) rotate(8deg);
+}
+
+/* Brand — bold neon cyan glow, no emoji */
 .site-brand {
   display: flex;
   align-items: center;
+  gap: var(--space-2);
+}
+
+/* Small asterisk/starburst mark, echoing the corner accents in the reference */
+.site-brand::before {
+  content: '*';
+  color: var(--neon-cyan);
+  font-size: var(--text-lg);
+  font-weight: 900;
+  text-shadow: 0 0 8px var(--neon-cyan);
 }
 
 .brand-name {
   font-size: var(--text-xl);
   font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 0.08em;
+  color: var(--neon-cyan);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* Blue underline accent */
-  border-bottom: 3px solid var(--color-primary-mid);
-  padding-bottom: 2px;
+  border-bottom: none;
+  padding-bottom: 0;
+  /* Neon glow effect */
+  text-shadow:
+    0 0 4px rgba(0, 240, 224, 0.8),
+    0 0 14px rgba(0, 240, 224, 0.45);
 }
 
-/* Hamburger button */
+/* Hamburger button — outlined in cyan to match the theme */
 .nav-toggle {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
   background: none;
-  border: 1px solid var(--color-mid);
+  border: 1px solid var(--neon-cyan-dim);
   cursor: pointer;
   padding: var(--space-2);
   border-radius: var(--border-radius);
@@ -231,8 +277,9 @@ input, select, button, textarea {
   display: block;
   width: 22px;
   height: 2px;
-  background-color: #ffffff;
+  background-color: var(--neon-cyan);
   border-radius: 2px;
+  box-shadow: 0 0 4px rgba(0, 240, 224, 0.6);
   transition: transform var(--transition-normal), opacity var(--transition-fast);
 }
 
@@ -246,15 +293,16 @@ input, select, button, textarea {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Mobile nav */
+/* Mobile nav — black background to match the header, cyan accents */
 .primary-nav {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--color-dark);
-  border-bottom: 2px solid var(--color-primary);
+  background-color: var(--neon-black);
+  border-bottom: 1px solid var(--neon-cyan-dim);
+  box-shadow: 0 4px 16px rgba(0, 240, 224, 0.15);
   padding: var(--space-4);
   z-index: 99;
 }
@@ -270,24 +318,29 @@ input, select, button, textarea {
 .nav-link {
   display: block;
   padding: var(--space-2) var(--space-3);
-  color: var(--color-text-on-dark);
+  color: #94a3b8;
   text-decoration: none;
   border-radius: var(--border-radius);
-  font-weight: 500;
+  font-weight: 600;
   font-size: var(--text-sm);
-  letter-spacing: 0.02em;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .nav-link:hover {
-  background-color: var(--color-primary);
-  color: #ffffff;
+  background-color: rgba(0, 240, 224, 0.08);
+  color: var(--neon-cyan);
+  border-color: var(--neon-cyan-dim);
 }
 
 .nav-link.is-active {
-  background-color: var(--color-primary);
-  color: #ffffff;
+  background-color: rgba(0, 240, 224, 0.12);
+  color: var(--neon-cyan);
   font-weight: 700;
+  border-color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 240, 224, 0.5);
 }
 
 
