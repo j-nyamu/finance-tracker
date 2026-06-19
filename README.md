@@ -3,8 +3,9 @@
 A lightweight, offline-first expense tracker built for students.
 Log transactions, set a monthly budget cap, search with regex, and export your data — no account or internet connection required.
 
-**Live demo:** https://j-nyamu.github.io/finance-tracker/
-**Repository:** https://github.com/j-nyamu/finance-tracker.git
+**Live demo:** https://j-nyamu.github.io/alu-web-development/
+**Repository:** https://github.com/j-nyamu/alu-web-development
+**Demo video:** https://youtu.be/chk49g-_TUU
 
 ---
 
@@ -18,7 +19,7 @@ Student Finance Tracker
 
 1. Clone the repository:
    ```
-   git clone https://github.com/j-nyamu/finance-tracker.git
+   git clone https://github.com/j-nyamu/alu-web-development.git
    ```
 2. Open the project folder in VS Code.
 3. Install the **Live Server** extension if you have not already.
@@ -34,6 +35,14 @@ Student Finance Tracker
 1. Open `tests.html` directly in your browser — double-click it from your file explorer.
 2. No server needed. The test suite is fully self-contained with no imports.
 3. The page runs all regex validator assertions automatically and shows pass/fail results.
+
+---
+
+## Demo video
+
+Watch the 2–3 minute walkthrough here: https://youtu.be/chk49g-_TUU
+
+It covers keyboard navigation, form validation including the back-reference regex rule, live regex search with an intentionally invalid pattern, the budget alert, JSON import/export, and the app at mobile, tablet, and desktop widths.
 
 ---
 
@@ -171,4 +180,4 @@ AI tools were used only for documentation and seed data generation, not for code
 
 ---
 
-*Built by [j-nyamu](https://github.com/j-nyamu) — African Leadership University*
+*Built by [j-nyamu](https://github.com/j-nyamu) — African Leadership University, Web Development*
