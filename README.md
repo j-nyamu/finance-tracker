@@ -171,4 +171,4 @@ AI tools were used only for documentation and seed data generation, not for code
 
 ---
 
-*Built by [j-nyamu](https://github.com/j-nyamu) — African Leadership University, Web Development*
+*Built by [j-nyamu](https://github.com/j-nyamu) — African Leadership University*
