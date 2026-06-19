@@ -3,8 +3,8 @@
 A lightweight, offline-first expense tracker built for students.
 Log transactions, set a monthly budget cap, search with regex, and export your data — no account or internet connection required.
 
-**Live demo:** https://j-nyamu.github.io/alu-web-development/
-**Repository:** https://github.com/j-nyamu/alu-web-development
+**Live demo:** https://j-nyamu.github.io/finance-tracker/
+**Repository:**https://github.com/j-nyamu/finance-tracker.git
 **Demo video:** https://youtu.be/chk49g-_TUU
 
 ---
@@ -19,7 +19,7 @@ Student Finance Tracker
 
 1. Clone the repository:
    ```
-   git clone https://github.com/j-nyamu/alu-web-development.git
+   git clone https://github.com/j-nyamu/finance-tracker.git
    ```
 2. Open the project folder in VS Code.
 3. Install the **Live Server** extension if you have not already.
